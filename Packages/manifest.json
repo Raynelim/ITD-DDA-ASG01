@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.unity.ai.navigation": "2.0.9",
     "com.unity.collab-proxy": "2.10.2",
     "com.unity.feature.development": "1.0.2",
     "com.unity.inputsystem": "1.14.2",
@@ -9,8 +10,8 @@
     "com.unity.render-pipelines.universal": "17.0.4",
     "com.unity.timeline": "1.8.9",
     "com.unity.xr.arcore": "6.2.0",
-    "com.unity.xr.arfoundation": "6.2.0",
-    "com.unity.xr.arkit": "6.2.0",
+    "com.unity.xr.arfoundation": "6.2.1",
+    "com.unity.xr.arkit": "6.2.1",
     "com.unity.xr.interaction.toolkit": "3.2.1",
     "com.unity.xr.management": "4.5.2",
     "com.unity.modules.accessibility": "1.0.0",
