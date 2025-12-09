@@ -1,60 +1,211 @@
 using UnityEngine;
-using Firebase.Database;
-using Firebase.Extensions;
-using System.Collections.Generic;
-using TMPro;
+using UnityEngine.UI;
+using Firebase;
 using Firebase.Auth;
+using TMPro; // Use this if you are using TextMeshPro for UI
 
-public class DatabaseController : MonoBehaviour
+public class LoginRegisterManager : MonoBehaviour
 {
-    private Player myPlayer;
+    // --- UI ELEMENTS (Drag these from the Inspector) ---
 
-    public string Name;
+    [Header("UI Sections")]
+    public GameObject loginPanel;
+    public GameObject registerPanel;
+    public GameObject loggedInPanel;
 
-    public TMP_InputField Email;
-    public TMP_InputField Password;
+    [Header("Login Inputs")]
+    public TMP_InputField loginEmailInput;
+    public TMP_InputField loginPasswordInput;
 
-    public void Signup()
+    [Header("Register Inputs")]
+    public TMP_InputField registerEmailInput;
+    public TMP_InputField registerPasswordInput;
+
+    [Header("Status & Info")]
+    public TMP_Text statusText;
+    public TMP_Text loggedInUserText;
+
+    // --- FIREBASE VARIABLES ---
+
+    private FirebaseAuth auth;
+    private FirebaseUser user;
+
+    // =========================================================
+    // 1. INITIALIZATION
+    // =========================================================
+
+    void Start()
     {
-        var createUserTask = FirebaseAuth.DefaultInstance.CreateUserWithEmailAndPasswordAsync(Email.text, Password.text);
+        InitializeFirebase();
+        // Start by showing the login screen
+        SwitchUI(loginPanel); 
+    }
 
-        createUserTask.ContinueWithOnMainThread(task =>
+    private void InitializeFirebase()
+    {
+        FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
         {
-            if (task.IsFaulted)
+            var dependencyStatus = task.Result;
+            if (dependencyStatus == DependencyStatus.Available)
             {
-                Debug.Log("Can't create user!");
-                return;
+                // Set up the authentication instance
+                auth = FirebaseAuth.DefaultInstance;
+                auth.StateChanged += AuthStateChanged;
+                AuthStateChanged(this, null);
+                Debug.Log("Firebase is ready.");
             }
-
-            if (task.IsCompleted)
+            else
             {
-                Debug.Log($"User created, user ID is: {task.Result.User.UserId}");
-
-                // SAVE THE USER'S PROFILE
+                Debug.LogError($"Could not resolve all Firebase dependencies: {dependencyStatus}");
             }
-
         });
     }
 
-    public void SignIn()
-    {
-        var signInTask = FirebaseAuth.DefaultInstance.SignInWithEmailAndPasswordAsync(Email.text, Password.text);
+    // =========================================================
+    // 2. UI SWITCHING LOGIC (Called by Button OnClick() events)
+    // =========================================================
 
-        signInTask.ContinueWithOnMainThread(task =>
+    public void ShowLogin()
+    {
+        SwitchUI(loginPanel);
+    }
+
+    public void ShowRegister()
+    {
+        SwitchUI(registerPanel);
+    }
+
+    private void SwitchUI(GameObject activePanel)
+    {
+        // Hide all panels first
+        loginPanel.SetActive(false);
+        registerPanel.SetActive(false);
+        loggedInPanel.SetActive(false);
+        
+        // Show the desired panel
+        activePanel.SetActive(true);
+        statusText.text = ""; // Clear status when switching
+    }
+
+    // =========================================================
+    // 3. FIREBASE AUTHENTICATION FUNCTIONS
+    // =========================================================
+
+    public void RegisterButton()
+    {
+        RegisterUser(registerEmailInput.text, registerPasswordInput.text);
+    }
+
+    public void LoginButton()
+    {
+        LoginUser(loginEmailInput.text, loginPasswordInput.text);
+    }
+
+    public void LogoutButton()
+    {
+        if (auth != null)
         {
+            auth.SignOut();
+        }
+    }
+
+    private void RegisterUser(string email, string password)
+    {
+        statusText.text = "Registering...";
+        auth.CreateUserWithEmailAndPasswordAsync(email, password).ContinueWith(task =>
+        {
+            if (task.IsCanceled)
+            {
+                Debug.LogError("Registration was canceled.");
+                return;
+            }
             if (task.IsFaulted)
             {
-                Debug.Log("Can't sign in!");
+                Debug.LogError($"Registration encountered an error: {task.Exception}");
+                // Display user-friendly error
+                UnityMainThreadDispatcher.Instance().Enqueue(() => { 
+                    statusText.text = $"Registration Failed: {task.Exception.InnerExceptions[0].Message}";
+                });
                 return;
             }
 
-            if (task.IsCompleted)
-            {
-                Debug.Log($"User signed in, user ID is: {task.Result.User.UserId}");
+            // Firebase user has been created. AuthStateChanged will handle UI update.
+            user = task.Result.User;
+            Debug.LogFormat("Firebase user created successfully: {0} ({1})", user.DisplayName, user.UserId);
+        });
+    }
 
-                // LOAD THE USER'S PROFILE
+    private void LoginUser(string email, string password)
+    {
+        statusText.text = "Logging in...";
+        auth.SignInWithEmailAndPasswordAsync(email, password).ContinueWith(task =>
+        {
+            if (task.IsCanceled)
+            {
+                Debug.LogError("Login was canceled.");
+                return;
+            }
+            if (task.IsFaulted)
+            {
+                Debug.LogError($"Login encountered an error: {task.Exception}");
+                // Display user-friendly error
+                 UnityMainThreadDispatcher.Instance().Enqueue(() => { 
+                    statusText.text = $"Login Failed: {task.Exception.InnerExceptions[0].Message}";
+                });
+                return;
             }
 
+            // User is signed in. AuthStateChanged will handle UI update.
+            user = task.Result.User;
+            Debug.LogFormat("User signed in successfully: {0} ({1})", user.DisplayName, user.UserId);
         });
+    }
+
+    // =========================================================
+    // 4. AUTH STATE CHANGE LISTENER
+    // =========================================================
+
+    // This handles the UI update regardless of how the user signed in (login or register)
+    void AuthStateChanged(object sender, System.EventArgs eventArgs)
+    {
+        if (auth.CurrentUser != user)
+        {
+            bool signedIn = auth.CurrentUser != null;
+            if (signedIn)
+            {
+                user = auth.CurrentUser;
+                Debug.Log($"Signed in as {user.Email}");
+
+                // Update UI on the main thread
+                UnityMainThreadDispatcher.Instance().Enqueue(() => {
+                    loggedInUserText.text = $"Welcome, {user.Email}!";
+                    SwitchUI(loggedInPanel);
+                    loginEmailInput.text = "";
+                    loginPasswordInput.text = "";
+                });
+            }
+            else
+            {
+                Debug.Log("Signed out.");
+                user = null;
+
+                // Update UI on the main thread
+                UnityMainThreadDispatcher.Instance().Enqueue(() => {
+                    SwitchUI(loginPanel); // Go back to login screen
+                });
+            }
+        }
+    }
+
+    // Clean up the listener when the object is destroyed
+    void OnDestroy()
+    {
+        if (auth != null)
+        {
+            auth.StateChanged -= AuthStateChanged;
+        }
     }
 }
+
+// NOTE: You will need a UnityMainThreadDispatcher script to safely update the UI 
+// from the asynchronous Firebase tasks. A common implementation can be found online.
