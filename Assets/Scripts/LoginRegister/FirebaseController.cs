@@ -17,15 +17,15 @@ public class FirebaseController : MonoBehaviour
     public TMP_InputField registerPasswordInput;
 
     [Header("Pet Selection & Naming")]
-    public TMP_InputField pet1NameInput; // Input field for Pet 1 name
-    public TMP_InputField pet2NameInput; // Input field for Pet 2 name
+    public TMP_InputField pet1NameInput; // Input field for Pet 1 (Skeleton Warrior) name
+    public TMP_InputField pet2NameInput; // Input field for Pet 2 (Wolf Mage) name
 
     [Header("Main Panels")]
     public GameObject loginPanel;
     public GameObject registerPanel;
     public GameObject petSelectionPanel; // Choose between Pet 1 or Pet 2
-    public GameObject pet1NameCreationPanel; // Name your Pet 1
-    public GameObject pet2NameCreationPanel; // Name your Pet 2
+    public GameObject pet1NameCreationPanel; // Pet 1 (Skeleton Warrior) name creation panel
+    public GameObject pet2NameCreationPanel; // Pet 2 (Wolf Mage) name creation panel
     public GameObject gamePanel; // The game menu shown after successful login
 
     [Header("Notification Panels")]
@@ -86,7 +86,24 @@ public class FirebaseController : MonoBehaviour
 
     public void OnRegisterButtonPress()
     {
-        StartCoroutine(RegisterUser(registerEmailInput.text, registerPasswordInput.text));
+        string email = registerEmailInput.text.Trim();
+        string password = registerPasswordInput.text;
+
+        // Validate email format
+        if (string.IsNullOrEmpty(email) || !email.Contains("@") || !email.Contains("."))
+        {
+            ShowWrongFormatNotification();
+            return;
+        }
+
+        // Validate password length
+        if (password.Length < 6)
+        {
+            ShowWrongFormatNotification();
+            return;
+        }
+
+        StartCoroutine(RegisterUser(email, password));
     }
 
     private IEnumerator RegisterUser(string email, string password)
@@ -130,23 +147,59 @@ public class FirebaseController : MonoBehaviour
 
     // ================= PET SELECTION & NAMING =================
 
-    public void SelectPet1()
+    public void SelectSkeletonWarrior()
     {
         selectedPetType = "SkeletonWarrior";
-        Debug.Log("Selected Pet: SkeletonWarrior");
-        petSelectionPanel.SetActive(false);
-        pet1NameCreationPanel.SetActive(true);
+        Debug.Log("=== SelectSkeletonWarrior called - Going to Pet 1 Name Panel ===");
+        Debug.Log("Pet Selection Panel: " + (petSelectionPanel != null ? "EXISTS" : "NULL"));
+        Debug.Log("Pet 1 Name Creation Panel: " + (pet1NameCreationPanel != null ? "EXISTS" : "NULL"));
+        
+        if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
+        if (loginPanel != null) loginPanel.SetActive(false);
+        if (registerPanel != null) registerPanel.SetActive(false);
+        if (gamePanel != null) gamePanel.SetActive(false);
+        if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
+        
+        if (pet1NameCreationPanel != null)
+        {
+            pet1NameCreationPanel.SetActive(true);
+            Debug.Log("Pet 1 (Skeleton Warrior) Name Panel set to ACTIVE");
+            Debug.Log("Pet1NameCreationPanel activeSelf: " + pet1NameCreationPanel.activeSelf);
+            Debug.Log("Pet1NameCreationPanel activeInHierarchy: " + pet1NameCreationPanel.activeInHierarchy);
+        }
+        else
+        {
+            Debug.LogError("pet1NameCreationPanel is NULL! Assign the Pet 1 name panel in Inspector!");
+        }
     }
 
-    public void SelectPet2()
+    public void SelectWolfMage()
     {
-        selectedPetType = "DragonKnight";
-        Debug.Log("Selected Pet: DragonKnight");
-        petSelectionPanel.SetActive(false);
-        pet2NameCreationPanel.SetActive(true);
+        selectedPetType = "WolfMage";
+        Debug.Log("=== SelectWolfMage called - Going to Pet 2 Name Panel ===");
+        Debug.Log("Pet Selection Panel: " + (petSelectionPanel != null ? "EXISTS" : "NULL"));
+        Debug.Log("Pet 2 Name Creation Panel: " + (pet2NameCreationPanel != null ? "EXISTS" : "NULL"));
+        
+        if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
+        if (loginPanel != null) loginPanel.SetActive(false);
+        if (registerPanel != null) registerPanel.SetActive(false);
+        if (gamePanel != null) gamePanel.SetActive(false);
+        if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
+        
+        if (pet2NameCreationPanel != null)
+        {
+            pet2NameCreationPanel.SetActive(true);
+            Debug.Log("Pet 2 (Wolf Mage) Name Panel set to ACTIVE");
+            Debug.Log("Pet2NameCreationPanel activeSelf: " + pet2NameCreationPanel.activeSelf);
+            Debug.Log("Pet2NameCreationPanel activeInHierarchy: " + pet2NameCreationPanel.activeInHierarchy);
+        }
+        else
+        {
+            Debug.LogError("pet2NameCreationPanel is NULL! Assign the Pet 2 name panel in Inspector!");
+        }
     }
 
-    public void ConfirmPet1Name()
+    public void ConfirmSkeletonWarriorName()
     {
         string customPetName = pet1NameInput.text.Trim();
         
@@ -156,11 +209,11 @@ public class FirebaseController : MonoBehaviour
             return;
         }
 
-        Debug.Log("Confirming Pet 1 Name: " + customPetName);
+        Debug.Log("Confirming Skeleton Warrior Name: " + customPetName);
         SaveUserProfileWithPet(tempUserId, tempUserEmail, selectedPetType, customPetName);
     }
 
-    public void ConfirmPet2Name()
+    public void ConfirmWolfMageName()
     {
         string customPetName = pet2NameInput.text.Trim();
         
@@ -170,7 +223,7 @@ public class FirebaseController : MonoBehaviour
             return;
         }
 
-        Debug.Log("Confirming Pet 2 Name: " + customPetName);
+        Debug.Log("Confirming Wolf Mage Name: " + customPetName);
         SaveUserProfileWithPet(tempUserId, tempUserEmail, selectedPetType, customPetName);
     }
 
@@ -233,7 +286,24 @@ public class FirebaseController : MonoBehaviour
 
     public void OnLoginButtonPress()
     {
-        StartCoroutine(LoginUser(loginEmailInput.text, loginPasswordInput.text));
+        string email = loginEmailInput.text.Trim();
+        string password = loginPasswordInput.text;
+
+        // Validate email format
+        if (string.IsNullOrEmpty(email) || !email.Contains("@") || !email.Contains("."))
+        {
+            ShowWrongFormatNotification();
+            return;
+        }
+
+        // Validate password length
+        if (password.Length < 6)
+        {
+            ShowWrongFormatNotification();
+            return;
+        }
+
+        StartCoroutine(LoginUser(email, password));
     }
 
     private IEnumerator LoginUser(string email, string password)
@@ -294,6 +364,10 @@ public class FirebaseController : MonoBehaviour
         loginPanel.SetActive(false);
         registerPanel.SetActive(true);
         HideAllNotifications();
+        
+        // Clear login input fields
+        if (loginEmailInput != null) loginEmailInput.text = "";
+        if (loginPasswordInput != null) loginPasswordInput.text = "";
     }
 
     public void SwitchToLogin()
@@ -302,6 +376,10 @@ public class FirebaseController : MonoBehaviour
         registerPanel.SetActive(false);
         loginPanel.SetActive(true);
         HideAllNotifications();
+        
+        // Clear register input fields
+        if (registerEmailInput != null) registerEmailInput.text = "";
+        if (registerPasswordInput != null) registerPasswordInput.text = "";
     }
 
     void LoadGameScene()
@@ -391,8 +469,13 @@ public class FirebaseController : MonoBehaviour
 
     private void ShowPetSelectionPanel()
     {
-        if (registerPanel != null) registerPanel.SetActive(false);
-        if (petSelectionPanel != null) petSelectionPanel.SetActive(true);
+        Debug.Log("Showing Pet Selection Panel");
+        registerPanel.SetActive(false);
+        loginPanel.SetActive(false);
+        gamePanel.SetActive(false);
+        pet1NameCreationPanel.SetActive(false);
+        pet2NameCreationPanel.SetActive(false);
+        petSelectionPanel.SetActive(true);
     }
 
     private IEnumerator HideNotificationAndShowPetSelection(GameObject panel, float delay)
