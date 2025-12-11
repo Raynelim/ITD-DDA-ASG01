@@ -23,44 +23,52 @@ public class PetController : MonoBehaviour
 
     private NavMeshAgent agent;
     private bool isGrabbed;
+    private bool isMovingToUserTap;
     private float wanderTimer;
 
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
-        // These settings help with AR scale issues
-        agent.updateUpAxis = false;
+
+        // AR-friendly NavMesh settings
+        agent.updateUpAxis = false;   // AR planes are flat
         agent.updateRotation = true;
+        agent.stoppingDistance = stoppingDistance;
     }
 
     private void OnEnable()
     {
         if (ActivePet == null)
-        {
             ActivePet = this;
-        }
     }
 
     private void OnDisable()
     {
         if (ActivePet == this)
-        {
             ActivePet = null;
-        }
     }
 
     private void Update()
     {
         if (isGrabbed)
+            return;
+
+        // If moving to a user tap, stop wandering until arrival
+        if (isMovingToUserTap)
         {
+            if (!agent.pathPending && agent.remainingDistance <= stoppingDistance)
+            {
+                isMovingToUserTap = false;
+                wanderTimer = 0f;
+            }
             return;
         }
 
+        // ---- Wandering Logic ----
         wanderTimer += Time.deltaTime;
+        bool destinationReached = !agent.hasPath || agent.remainingDistance <= stoppingDistance;
 
-        bool needsNewDestination = !agent.hasPath || agent.remainingDistance <= stoppingDistance;
-
-        if (wanderTimer >= wanderInterval && needsNewDestination)
+        if (wanderTimer >= wanderInterval && destinationReached)
         {
             if (TryGetRandomPointOnNavMesh(transform.position, wanderRadius, out Vector3 target))
             {
@@ -72,42 +80,50 @@ public class PetController : MonoBehaviour
         }
     }
 
+    // ======================================================================
+    // User Tap Movement
+    // ======================================================================
     public void MoveTo(Vector3 destination)
     {
         if (isGrabbed)
-        {
             return;
-        }
 
-        wanderTimer = 0f;
         if (NavMesh.SamplePosition(destination, out NavMeshHit hit, 0.5f, NavMesh.AllAreas))
         {
+            isMovingToUserTap = true;
+            wanderTimer = 0f;
             agent.isStopped = false;
             agent.SetDestination(hit.position);
         }
     }
 
+    // ======================================================================
+    // Grab & Drag Controls
+    // ======================================================================
     public void BeginGrab()
     {
         isGrabbed = true;
+        isMovingToUserTap = false;
+
         agent.isStopped = true;
         agent.ResetPath();
     }
 
     public void UpdateGrab(Vector3 worldPosition)
     {
-        // Warp agent along with transform to avoid desync
         transform.position = worldPosition;
-        agent.Warp(worldPosition);
+        agent.Warp(worldPosition);   // Keep NavMeshAgent synced
     }
 
     public void EndGrab()
     {
         isGrabbed = false;
-        // After letting go, the pet will resume wandering logic on next Update()
         wanderTimer = 0f;
     }
 
+    // ======================================================================
+    // Utility
+    // ======================================================================
     private static bool TryGetRandomPointOnNavMesh(Vector3 center, float range, out Vector3 result)
     {
         for (int i = 0; i < 10; i++)

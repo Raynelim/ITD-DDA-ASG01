@@ -21,35 +21,31 @@ public class ARPetSpawner : MonoBehaviour
     private void OnEnable()
     {
         if (trackedImageManager != null)
-        {
             trackedImageManager.trackablesChanged.AddListener(OnTrackedImagesChanged);
-        }
+
+        // NEW — subscribe to tap event
+        EditorTapSimulator.OnTap += MovePetToPosition;
     }
 
     private void OnDisable()
     {
         if (trackedImageManager != null)
-        {
             trackedImageManager.trackablesChanged.RemoveListener(OnTrackedImagesChanged);
-        }
+
+        // NEW — unsubscribe
+        EditorTapSimulator.OnTap -= MovePetToPosition;
     }
 
     private void OnTrackedImagesChanged(ARTrackablesChangedEventArgs<ARTrackedImage> args)
     {
         foreach (var trackedImage in args.added)
-        {
             HandleTrackedImage(trackedImage);
-        }
 
         foreach (var trackedImage in args.updated)
-        {
             HandleTrackedImage(trackedImage);
-        }
 
         foreach (var removedPair in args.removed)
-        {
             DisableForImage(removedPair.Value);
-        }
     }
 
     private void HandleTrackedImage(ARTrackedImage trackedImage)
@@ -127,6 +123,21 @@ public class ARPetSpawner : MonoBehaviour
         }
 
         return result;
+    }
+
+    // =============================================================
+    // NEW — Called when user taps (in editor OR on device)
+    // =============================================================
+    private void MovePetToPosition(Vector3 position)
+    {
+        // Move the most recently tracked pet (usually only 1)
+        foreach (var entry in spawnedByImageName.Values)
+        {
+            if (entry.petInstance != null && entry.petInstance.isActiveAndEnabled)
+            {
+                entry.petInstance.MoveTo(position);
+            }
+        }
     }
 
     private struct SpawnedSet

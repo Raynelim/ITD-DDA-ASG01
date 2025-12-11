@@ -389,7 +389,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1697315471176368165, guid: a96cd23d8739d6f41880a7042f5926a4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1620460755}
   m_SourcePrefab: {fileID: 100100000, guid: a96cd23d8739d6f41880a7042f5926a4, type: 3}
 --- !u!1 &957430251
 GameObject:
@@ -589,6 +592,21 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1697315471176368165, guid: a96cd23d8739d6f41880a7042f5926a4, type: 3}
   m_PrefabInstance: {fileID: 580764598}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1620460755
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1620460749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8b60c614583c9c45b89f9400916bf9a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wanderRadius: 2.5
+  wanderInterval: 5
+  stoppingDistance: 0.3
 --- !u!1001 &2018220220
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -948,6 +966,9 @@ GameObject:
   - component: {fileID: 2512387470422636642}
   - component: {fileID: 2512387470422636671}
   - component: {fileID: 2512387470422636672}
+  - component: {fileID: 2512387470422636673}
+  - component: {fileID: 2512387470422636675}
+  - component: {fileID: 2512387470422636674}
   m_Layer: 0
   m_Name: XR Origin (AR Rig)
   m_TagString: Untagged
@@ -988,6 +1009,56 @@ MonoBehaviour:
   trackedImageManager: {fileID: 2512387470422636671}
   landscapePrefab: {fileID: 1293466233}
   petPrefab: {fileID: 1620460749}
+--- !u!114 &2512387470422636673
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2512387470422636669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a59e28b194103b4fab3b1afbcfc839b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  arCamera: {fileID: 2512387468973847745}
+  petLayerMask:
+    serializedVersion: 2
+    m_Bits: 64
+  groundLayerMask:
+    serializedVersion: 2
+    m_Bits: 128
+  tapMaxMovement: 200
+--- !u!114 &2512387470422636674
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2512387470422636669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa17d122634046b4a8e23048891fafc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <trackablesChanged>k__BackingField:
+    m_PersistentCalls:
+      m_Calls: []
+  m_RaycastPrefab: {fileID: 0}
+--- !u!114 &2512387470422636675
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2512387470422636669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6b72460914d2e246a8013d77d13d510, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  raycastManager: {fileID: 0}
+  arCamera: {fileID: 2512387468973847745}
 --- !u!4 &2512387470860572925
 Transform:
   m_ObjectHideFlags: 0
