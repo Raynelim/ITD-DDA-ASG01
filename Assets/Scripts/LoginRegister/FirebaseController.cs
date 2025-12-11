@@ -21,6 +21,7 @@ public class FirebaseController : MonoBehaviour
     public TMP_InputField pet2NameInput; // Input field for Pet 2 (Wolf Mage) name
 
     [Header("Main Panels")]
+    public GameObject startPage; // The initial start page
     public GameObject loginPanel;
     public GameObject registerPanel;
     public GameObject petSelectionPanel; // Choose between Pet 1 or Pet 2
@@ -76,9 +77,10 @@ public class FirebaseController : MonoBehaviour
         if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
         if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
 
-        // Start with register panel visible
+        // Start with start page visible
+        if (startPage != null) startPage.SetActive(true);
         if (loginPanel != null) loginPanel.SetActive(false);
-        if (registerPanel != null) registerPanel.SetActive(true);
+        if (registerPanel != null) registerPanel.SetActive(false);
         if (gamePanel != null) gamePanel.SetActive(false);
     }
 
@@ -86,12 +88,41 @@ public class FirebaseController : MonoBehaviour
 
     public void OnRegisterButtonPress()
     {
+        Debug.Log("=== OnRegisterButtonPress called ===");
+        Debug.Log("registerEmailInput is null? " + (registerEmailInput == null));
+        Debug.Log("registerPasswordInput is null? " + (registerPasswordInput == null));
+
+        if (registerEmailInput == null || registerPasswordInput == null)
+        {
+            Debug.LogError("Input fields are not assigned in Inspector!");
+            return;
+        }
+
         string email = registerEmailInput.text.Trim();
         string password = registerPasswordInput.text;
 
-        // Validate email format
-        if (string.IsNullOrEmpty(email) || !email.Contains("@") || !email.Contains("."))
+        Debug.Log("Email entered: '" + email + "' (length: " + email.Length + ")");
+        Debug.Log("Password entered: '" + password + "' (length: " + password.Length + ")");
+
+        // Validate email format (basic check)
+        if (string.IsNullOrEmpty(email))
         {
+            Debug.LogWarning("Email is empty");
+            ShowWrongFormatNotification();
+            return;
+        }
+
+        if (!email.Contains("@"))
+        {
+            Debug.LogWarning("Email missing @");
+            ShowWrongFormatNotification();
+            return;
+        }
+
+        string[] emailParts = email.Split('@');
+        if (emailParts.Length != 2 || !emailParts[1].Contains("."))
+        {
+            Debug.LogWarning("Email format invalid - After @: '" + (emailParts.Length > 1 ? emailParts[1] : "nothing") + "'");
             ShowWrongFormatNotification();
             return;
         }
@@ -99,10 +130,12 @@ public class FirebaseController : MonoBehaviour
         // Validate password length
         if (password.Length < 6)
         {
+            Debug.LogWarning("Password too short: " + password.Length + " characters");
             ShowWrongFormatNotification();
             return;
         }
 
+        Debug.Log("✓ Email and password validation passed - Starting registration");
         StartCoroutine(RegisterUser(email, password));
     }
 
@@ -256,16 +289,25 @@ public class FirebaseController : MonoBehaviour
     public void GoBackPetSelection()
     {
         Debug.Log("Going back to Pet Selection");
-        pet1NameCreationPanel.SetActive(false);
-        pet2NameCreationPanel.SetActive(false);
-        petSelectionPanel.SetActive(true);
+        if (startPage != null) startPage.SetActive(false);
+        if (loginPanel != null) loginPanel.SetActive(false);
+        if (registerPanel != null) registerPanel.SetActive(false);
+        if (gamePanel != null) gamePanel.SetActive(false);
+        if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
+        if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
+        if (petSelectionPanel != null) petSelectionPanel.SetActive(true);
     }
 
     public void GoBackRegister()
     {
         Debug.Log("Going back to Register");
-        petSelectionPanel.SetActive(false);
-        registerPanel.SetActive(true);
+        if (startPage != null) startPage.SetActive(false);
+        if (loginPanel != null) loginPanel.SetActive(false);
+        if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
+        if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
+        if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
+        if (gamePanel != null) gamePanel.SetActive(false);
+        if (registerPanel != null) registerPanel.SetActive(true);
     }
 
     private void CreateNewUserProfile(string userId, string email)
@@ -286,23 +328,42 @@ public class FirebaseController : MonoBehaviour
 
     public void OnLoginButtonPress()
     {
+        Debug.Log("=== OnLoginButtonPress called ===");
+        
+        if (loginEmailInput == null)
+        {
+            Debug.LogError("loginEmailInput is NULL! Not assigned in Inspector!");
+            return;
+        }
+        
+        if (loginPasswordInput == null)
+        {
+            Debug.LogError("loginPasswordInput is NULL! Not assigned in Inspector!");
+            return;
+        }
+
         string email = loginEmailInput.text.Trim();
         string password = loginPasswordInput.text;
 
-        // Validate email format
-        if (string.IsNullOrEmpty(email) || !email.Contains("@") || !email.Contains("."))
+        Debug.Log("Login - Email entered: '" + email + "' (length: " + email.Length + ")");
+        Debug.Log("Login - Password entered: (length: " + password.Length + ")");
+
+        // Basic validation - just check if fields are not empty
+        if (string.IsNullOrEmpty(email))
         {
+            Debug.LogWarning("Login failed: Email is empty!");
+            ShowWrongFormatNotification();
+            return;
+        }
+        
+        if (string.IsNullOrEmpty(password))
+        {
+            Debug.LogWarning("Login failed: Password is empty!");
             ShowWrongFormatNotification();
             return;
         }
 
-        // Validate password length
-        if (password.Length < 6)
-        {
-            ShowWrongFormatNotification();
-            return;
-        }
-
+        Debug.Log("✓ Proceeding with login - Firebase will validate credentials");
         StartCoroutine(LoginUser(email, password));
     }
 
@@ -358,11 +419,42 @@ public class FirebaseController : MonoBehaviour
 
     // ================= UI HELPERS =================
 
+    public void GoToLoginFromStart()
+    {
+        Debug.Log("Going to Login from Start Page");
+        if (startPage != null) startPage.SetActive(false);
+        if (registerPanel != null) registerPanel.SetActive(false);
+        if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
+        if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
+        if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
+        if (gamePanel != null) gamePanel.SetActive(false);
+        if (loginPanel != null) loginPanel.SetActive(true);
+        HideAllNotifications();
+    }
+
+    public void GoToRegisterFromStart()
+    {
+        Debug.Log("Going to Register from Start Page");
+        if (startPage != null) startPage.SetActive(false);
+        if (loginPanel != null) loginPanel.SetActive(false);
+        if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
+        if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
+        if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
+        if (gamePanel != null) gamePanel.SetActive(false);
+        if (registerPanel != null) registerPanel.SetActive(true);
+        HideAllNotifications();
+    }
+
     public void SwitchToRegister()
     {
         Debug.Log("Switching to Register Panel");
-        loginPanel.SetActive(false);
-        registerPanel.SetActive(true);
+        if (startPage != null) startPage.SetActive(false);
+        if (loginPanel != null) loginPanel.SetActive(false);
+        if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
+        if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
+        if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
+        if (gamePanel != null) gamePanel.SetActive(false);
+        if (registerPanel != null) registerPanel.SetActive(true);
         HideAllNotifications();
         
         // Clear login input fields
@@ -373,8 +465,13 @@ public class FirebaseController : MonoBehaviour
     public void SwitchToLogin()
     {
         Debug.Log("Switching to Login Panel");
-        registerPanel.SetActive(false);
-        loginPanel.SetActive(true);
+        if (startPage != null) startPage.SetActive(false);
+        if (registerPanel != null) registerPanel.SetActive(false);
+        if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
+        if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
+        if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
+        if (gamePanel != null) gamePanel.SetActive(false);
+        if (loginPanel != null) loginPanel.SetActive(true);
         HideAllNotifications();
         
         // Clear register input fields
@@ -384,9 +481,13 @@ public class FirebaseController : MonoBehaviour
 
     void LoadGameScene()
     {
-        loginPanel.SetActive(false);
-        registerPanel.SetActive(false);
-        gamePanel.SetActive(true);
+        if (startPage != null) startPage.SetActive(false);
+        if (loginPanel != null) loginPanel.SetActive(false);
+        if (registerPanel != null) registerPanel.SetActive(false);
+        if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
+        if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
+        if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
+        if (gamePanel != null) gamePanel.SetActive(true);
     }
 
     // ================= NOTIFICATION HANDLERS =================
@@ -470,12 +571,13 @@ public class FirebaseController : MonoBehaviour
     private void ShowPetSelectionPanel()
     {
         Debug.Log("Showing Pet Selection Panel");
-        registerPanel.SetActive(false);
-        loginPanel.SetActive(false);
-        gamePanel.SetActive(false);
-        pet1NameCreationPanel.SetActive(false);
-        pet2NameCreationPanel.SetActive(false);
-        petSelectionPanel.SetActive(true);
+        if (startPage != null) startPage.SetActive(false);
+        if (registerPanel != null) registerPanel.SetActive(false);
+        if (loginPanel != null) loginPanel.SetActive(false);
+        if (gamePanel != null) gamePanel.SetActive(false);
+        if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
+        if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
+        if (petSelectionPanel != null) petSelectionPanel.SetActive(true);
     }
 
     private IEnumerator HideNotificationAndShowPetSelection(GameObject panel, float delay)
