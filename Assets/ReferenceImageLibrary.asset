@@ -23,7 +23,7 @@ MonoBehaviour:
     m_SerializedTextureGuid:
       m_GuidLow: 3464420668045495527
       m_GuidHigh: 914224819564736538
-    m_Size: {x: 0, y: 0}
-    m_SpecifySize: 0
-    m_Name: test image
+    m_Size: {x: 0.1, y: 0.09196787}
+    m_SpecifySize: 1
+    m_Name: spawner
     m_Texture: {fileID: 0}
