@@ -262,19 +262,44 @@ public class FirebaseController : MonoBehaviour
 
     private void SaveUserProfileWithPet(string userId, string email, string petType, string petName)
     {
-        // Create user object with pet data
-        UserProgress userProgress = new UserProgress(email, 1, 0, petType, petName);
+        // First, count existing players to determine the new player number
+        StartCoroutine(CreatePlayerAccount(userId, email, petType, petName));
+    }
+
+    private IEnumerator CreatePlayerAccount(string userId, string email, string petType, string petName)
+    {
+        // Get all players to count them
+        var playersTask = dbReference.Child("players").GetValueAsync();
+        yield return new WaitUntil(() => playersTask.IsCompleted);
+
+        int playerCount = 0;
+        if (playersTask.Exception == null && playersTask.Result.Exists)
+        {
+            playerCount = (int)playersTask.Result.ChildrenCount;
+        }
+
+        // Create new player key (player1, player2, etc.)
+        string newPlayerKey = "player" + (playerCount + 1);
+        Debug.Log($"Creating new player: {newPlayerKey}");
+
+        // Create user object with pet data (level 1, xp 0, batteries all 0 for new users)
+        UserProgress userProgress = new UserProgress(userId, email, petType, petName, 1, 0);
         string json = JsonUtility.ToJson(userProgress);
 
-        // Save to Database: users/USER_ID/
-        dbReference.Child("users").Child(userId).SetRawJsonValueAsync(json).ContinueWithOnMainThread(task => {
+        // Save to Database: players/player{N}/
+        dbReference.Child("players").Child(newPlayerKey).SetRawJsonValueAsync(json).ContinueWithOnMainThread(task => {
             if (task.IsCompleted)
             {
-                Debug.Log("User profile saved with Pet: " + petType + ", Pet Name: " + petName);
+                Debug.Log($"Player account created: {newPlayerKey} with Pet: {petType}, Pet Name: {petName}");
                 
-                // Go to game menu
+                // Hide name creation panels
                 if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
                 if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
+                
+                // Load user data into static manager
+                UserDataManager.LoadUserData(newPlayerKey, userProgress);
+                
+                // Go to game scene
                 LoadGameScene();
             }
             else
@@ -306,20 +331,6 @@ public class FirebaseController : MonoBehaviour
         if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
         if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
         if (registerPanel != null) registerPanel.SetActive(true);
-    }
-
-    private void CreateNewUserProfile(string userId, string email)
-    {
-        // This is only used for healing missing data during login
-        UserProgress initialProgress = new UserProgress(email, 1, 0, "Unknown", "Pet");
-        string json = JsonUtility.ToJson(initialProgress);
-
-        dbReference.Child("users").Child(userId).SetRawJsonValueAsync(json).ContinueWithOnMainThread(task => {
-            if (task.IsCompleted)
-            {
-                Debug.Log("User data healed in Database.");
-            }
-        });
     }
 
     // ================= LOGIN LOGIC =================
@@ -386,32 +397,51 @@ public class FirebaseController : MonoBehaviour
 
     private IEnumerator RetrieveUserData(string userId)
     {
-        var dataTask = dbReference.Child("users").Child(userId).GetValueAsync();
-        yield return new WaitUntil(predicate: () => dataTask.IsCompleted);
+        // Search all players for matching firebaseId
+        var playersTask = dbReference.Child("players").GetValueAsync();
+        yield return new WaitUntil(predicate: () => playersTask.IsCompleted);
 
-        if (dataTask.Exception != null)
+        if (playersTask.Exception != null)
         {
-            Debug.LogError("Failed to load data.");
+            Debug.LogError("Failed to load players data: " + playersTask.Exception);
+            ShowInvalidLoginNotification();
         }
-        else if (dataTask.Result.Value == null)
+        else if (!playersTask.Result.Exists)
         {
-            // Auth exists, but Database data is missing (rare edge case)
-            Debug.LogWarning("No data found for this user.");
-            CreateNewUserProfile(userId, auth.CurrentUser.Email); // Heal the data
+            Debug.LogWarning("No players found in database.");
+            ShowInvalidLoginNotification();
         }
         else
         {
-            // Data retrieved successfully!
-            DataSnapshot snapshot = dataTask.Result;
-            string json = snapshot.GetRawJsonValue();
+            // Search through all players for matching firebaseId
+            bool playerFound = false;
+            foreach (DataSnapshot playerSnapshot in playersTask.Result.Children)
+            {
+                string json = playerSnapshot.GetRawJsonValue();
+                UserProgress playerData = JsonUtility.FromJson<UserProgress>(json);
+                
+                if (playerData.firebaseId == userId)
+                {
+                    // Found the player!
+                    playerFound = true;
+                    string playerKey = playerSnapshot.Key; // e.g., "player1"
+                    
+                    Debug.Log($"Player found: {playerKey} - {playerData.petName} (Level {playerData.level})");
+                    
+                    // Load data into static manager
+                    UserDataManager.LoadUserData(playerKey, playerData);
+                    
+                    // Show success and go to game
+                    ShowLoginSuccessNotification();
+                    break;
+                }
+            }
             
-            // Convert JSON back to Object
-            UserProgress loadedProgress = JsonUtility.FromJson<UserProgress>(json);
-            
-            Debug.Log("Loaded Level: " + loadedProgress.level);
-            
-            // Show "Login Successful" and go to game menu
-            ShowLoginSuccessNotification();
+            if (!playerFound)
+            {
+                Debug.LogWarning("No player account found for this Firebase ID.");
+                ShowInvalidLoginNotification();
+            }
         }
     }
 
@@ -585,7 +615,7 @@ public class FirebaseController : MonoBehaviour
 
     private void ShowAccountExistsNotification()
     {
-        Debug.Log("Notification: Account already exists - Redirecting to login");
+        Debug.Log("Notification: Account already exists");
         HideAllNotifications();
         if (accountExistsPanel != null)
         {
@@ -599,11 +629,7 @@ public class FirebaseController : MonoBehaviour
             cg.interactable = true;
             cg.blocksRaycasts = true;
             
-            StartCoroutine(HideNotificationAndSwitchToLogin(accountExistsPanel, 2f));
-        }
-        else
-        {
-            SwitchToLogin();
+            StartCoroutine(HideNotificationAfterDelay(accountExistsPanel, 2f));
         }
     }
 
@@ -686,33 +712,106 @@ public class FirebaseController : MonoBehaviour
         if (panel != null) panel.SetActive(false);
         LoadGameScene();
     }
-
-    private IEnumerator HideNotificationAndSwitchToLogin(GameObject panel, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        if (panel != null) panel.SetActive(false);
-        SwitchToLogin();
-    }
 }
 
 // ================= DATA CLASS =================
 
 [System.Serializable]
+public class Inventory
+{
+    public int smallBattery;
+    public int mediumBattery;
+    public int largeBattery;
+
+    public Inventory(int small = 0, int medium = 0, int large = 0)
+    {
+        smallBattery = small;
+        mediumBattery = medium;
+        largeBattery = large;
+    }
+}
+
+[System.Serializable]
 public class UserProgress
 {
+    public string firebaseId; // Firebase Auth UID
     public string email;
+    public string pet; // Pet type (robofox, robocat)
+    public string petName; // Custom pet name
     public int level;
     public int xp;
-    public string pet; // Pet type (e.g., "Dragon", "Turtle")
-    public string petName; // Custom pet name
+    public Inventory inventory;
 
-    // Constructor
-    public UserProgress(string email, int level, int xp, string pet, string petName)
+    // Constructor for new users
+    public UserProgress(string firebaseId, string email, string pet, string petName, int level, int xp)
     {
+        this.firebaseId = firebaseId;
         this.email = email;
-        this.level = level;
-        this.xp = xp;
         this.pet = pet;
         this.petName = petName;
+        this.level = level;
+        this.xp = xp;
+        this.inventory = new Inventory(0, 0, 0);
+    }
+
+    // Full constructor with inventory
+    public UserProgress(string firebaseId, string email, string pet, string petName, int level, int xp, int smallBattery, int mediumBattery, int largeBattery)
+    {
+        this.firebaseId = firebaseId;
+        this.email = email;
+        this.pet = pet;
+        this.petName = petName;
+        this.level = level;
+        this.xp = xp;
+        this.inventory = new Inventory(smallBattery, mediumBattery, largeBattery);
+    }
+}
+
+// ================= STATIC DATA MANAGER =================
+// This class holds user data across scenes
+public static class UserDataManager
+{
+    public static string currentPlayerKey; // e.g., "player1", "player2"
+    public static string currentFirebaseId;
+    public static string currentUserEmail;
+    public static int currentLevel;
+    public static int currentXP;
+    public static string currentPetType; // robofox or robocat
+    public static string currentPetName;
+    public static int currentSmallBattery;
+    public static int currentMediumBattery;
+    public static int currentLargeBattery;
+
+    // Load data from UserProgress object
+    public static void LoadUserData(string playerKey, UserProgress data)
+    {
+        currentPlayerKey = playerKey;
+        currentFirebaseId = data.firebaseId;
+        currentUserEmail = data.email;
+        currentLevel = data.level;
+        currentXP = data.xp;
+        currentPetType = data.pet;
+        currentPetName = data.petName;
+        currentSmallBattery = data.inventory.smallBattery;
+        currentMediumBattery = data.inventory.mediumBattery;
+        currentLargeBattery = data.inventory.largeBattery;
+
+        Debug.Log($"UserDataManager loaded: {playerKey} - {currentPetName} (Level {currentLevel}, XP {currentXP})");
+        Debug.Log($"Inventory: Small={currentSmallBattery}, Medium={currentMediumBattery}, Large={currentLargeBattery}");
+    }
+
+    // Clear all data (for logout)
+    public static void ClearUserData()
+    {
+        currentPlayerKey = null;
+        currentFirebaseId = null;
+        currentUserEmail = null;
+        currentLevel = 0;
+        currentXP = 0;
+        currentPetType = null;
+        currentPetName = null;
+        currentSmallBattery = 0;
+        currentMediumBattery = 0;
+        currentLargeBattery = 0;
     }
 }
