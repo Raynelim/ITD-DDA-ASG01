@@ -420,57 +420,81 @@ public class FirebaseController : MonoBehaviour
     public void GoToLoginFromStart()
     {
         Debug.Log("Going to Login from Start Page");
+        
+        // Clear login input fields
+        if (loginEmailInput != null) loginEmailInput.text = "";
+        if (loginPasswordInput != null) loginPasswordInput.text = "";
+        
         if (startPage != null) startPage.SetActive(false);
         if (registerPanel != null) registerPanel.SetActive(false);
         if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
         if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
         if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
         if (loginPanel != null) loginPanel.SetActive(true);
+        
+        // Hide notifications AFTER switching panels to handle child notification panels
         HideAllNotifications();
     }
 
     public void GoToRegisterFromStart()
     {
         Debug.Log("Going to Register from Start Page");
+        
+        // Clear register input fields
+        if (registerEmailInput != null) registerEmailInput.text = "";
+        if (registerPasswordInput != null) registerPasswordInput.text = "";
+        
         if (startPage != null) startPage.SetActive(false);
         if (loginPanel != null) loginPanel.SetActive(false);
         if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
         if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
         if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
         if (registerPanel != null) registerPanel.SetActive(true);
+        
+        // Hide notifications AFTER switching panels to handle child notification panels
         HideAllNotifications();
     }
 
     public void SwitchToRegister()
     {
         Debug.Log("Switching to Register Panel");
+        
+        // Clear all input fields
+        if (loginEmailInput != null) loginEmailInput.text = "";
+        if (loginPasswordInput != null) loginPasswordInput.text = "";
+        if (registerEmailInput != null) registerEmailInput.text = "";
+        if (registerPasswordInput != null) registerPasswordInput.text = "";
+        
         if (startPage != null) startPage.SetActive(false);
         if (loginPanel != null) loginPanel.SetActive(false);
         if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
         if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
         if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
         if (registerPanel != null) registerPanel.SetActive(true);
-        HideAllNotifications();
         
-        // Clear login input fields
-        if (loginEmailInput != null) loginEmailInput.text = "";
-        if (loginPasswordInput != null) loginPasswordInput.text = "";
+        // Hide notifications AFTER switching panels to handle child notification panels
+        HideAllNotifications();
     }
 
     public void SwitchToLogin()
     {
         Debug.Log("Switching to Login Panel");
+        
+        // Clear all input fields
+        if (loginEmailInput != null) loginEmailInput.text = "";
+        if (loginPasswordInput != null) loginPasswordInput.text = "";
+        if (registerEmailInput != null) registerEmailInput.text = "";
+        if (registerPasswordInput != null) registerPasswordInput.text = "";
+        
         if (startPage != null) startPage.SetActive(false);
         if (registerPanel != null) registerPanel.SetActive(false);
         if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
         if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
         if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
         if (loginPanel != null) loginPanel.SetActive(true);
-        HideAllNotifications();
         
-        // Clear register input fields
-        if (registerEmailInput != null) registerEmailInput.text = "";
-        if (registerPasswordInput != null) registerPasswordInput.text = "";
+        // Hide notifications AFTER switching panels to handle child notification panels
+        HideAllNotifications();
     }
 
     void LoadGameScene()
@@ -483,11 +507,36 @@ public class FirebaseController : MonoBehaviour
 
     private void HideAllNotifications()
     {
-        if (invalidLoginPanel != null) invalidLoginPanel.SetActive(false);
-        if (loginSuccessPanel != null) loginSuccessPanel.SetActive(false);
-        if (accountExistsPanel != null) accountExistsPanel.SetActive(false);
-        if (accountCreatedPanel != null) accountCreatedPanel.SetActive(false);
-        if (wrongFormatPanel != null) wrongFormatPanel.SetActive(false);
+        Debug.Log("Hiding all notifications");
+        if (invalidLoginPanel != null)
+        {
+            invalidLoginPanel.SetActive(false);
+            Debug.Log("Hid invalidLoginPanel");
+        }
+        if (loginSuccessPanel != null)
+        {
+            loginSuccessPanel.SetActive(false);
+            Debug.Log("Hid loginSuccessPanel");
+        }
+        if (accountExistsPanel != null)
+        {
+            accountExistsPanel.SetActive(false);
+            Debug.Log("Hid accountExistsPanel");
+        }
+        if (accountCreatedPanel != null)
+        {
+            accountCreatedPanel.SetActive(false);
+            Debug.Log("Hid accountCreatedPanel");
+        }
+        if (wrongFormatPanel != null)
+        {
+            wrongFormatPanel.SetActive(false);
+            Debug.Log("Hid wrongFormatPanel");
+        }
+        else
+        {
+            Debug.LogWarning("wrongFormatPanel is NULL in HideAllNotifications!");
+        }
     }
 
     private void ShowInvalidLoginNotification()
@@ -498,6 +547,14 @@ public class FirebaseController : MonoBehaviour
         {
             invalidLoginPanel.transform.SetAsLastSibling();
             invalidLoginPanel.SetActive(true);
+            
+            // Ensure visibility
+            CanvasGroup cg = invalidLoginPanel.GetComponent<CanvasGroup>();
+            if (cg == null) cg = invalidLoginPanel.AddComponent<CanvasGroup>();
+            cg.alpha = 1f;
+            cg.interactable = true;
+            cg.blocksRaycasts = true;
+            
             StartCoroutine(HideNotificationAfterDelay(invalidLoginPanel, 2f));
         }
     }
@@ -510,6 +567,14 @@ public class FirebaseController : MonoBehaviour
         {
             loginSuccessPanel.transform.SetAsLastSibling();
             loginSuccessPanel.SetActive(true);
+            
+            // Ensure visibility
+            CanvasGroup cg = loginSuccessPanel.GetComponent<CanvasGroup>();
+            if (cg == null) cg = loginSuccessPanel.AddComponent<CanvasGroup>();
+            cg.alpha = 1f;
+            cg.interactable = true;
+            cg.blocksRaycasts = true;
+            
             StartCoroutine(HideNotificationAndLoadGame(loginSuccessPanel, 2f));
         }
         else
@@ -526,6 +591,14 @@ public class FirebaseController : MonoBehaviour
         {
             accountExistsPanel.transform.SetAsLastSibling();
             accountExistsPanel.SetActive(true);
+            
+            // Ensure visibility
+            CanvasGroup cg = accountExistsPanel.GetComponent<CanvasGroup>();
+            if (cg == null) cg = accountExistsPanel.AddComponent<CanvasGroup>();
+            cg.alpha = 1f;
+            cg.interactable = true;
+            cg.blocksRaycasts = true;
+            
             StartCoroutine(HideNotificationAndSwitchToLogin(accountExistsPanel, 2f));
         }
         else
@@ -542,6 +615,14 @@ public class FirebaseController : MonoBehaviour
         {
             accountCreatedPanel.transform.SetAsLastSibling();
             accountCreatedPanel.SetActive(true);
+            
+            // Ensure visibility
+            CanvasGroup cg = accountCreatedPanel.GetComponent<CanvasGroup>();
+            if (cg == null) cg = accountCreatedPanel.AddComponent<CanvasGroup>();
+            cg.alpha = 1f;
+            cg.interactable = true;
+            cg.blocksRaycasts = true;
+            
             StartCoroutine(HideNotificationAndShowPetSelection(accountCreatedPanel, 2f));
         }
         else
@@ -560,16 +641,12 @@ public class FirebaseController : MonoBehaviour
             wrongFormatPanel.transform.SetAsLastSibling();
             wrongFormatPanel.SetActive(true);
             
-            Debug.Log("Wrong Format Panel - activeSelf: " + wrongFormatPanel.activeSelf);
-            Debug.Log("Wrong Format Panel - activeInHierarchy: " + wrongFormatPanel.activeInHierarchy);
-            
+            // Ensure visibility
             CanvasGroup cg = wrongFormatPanel.GetComponent<CanvasGroup>();
-            if (cg != null)
-            {
-                cg.alpha = 1f;
-                cg.interactable = true;
-                cg.blocksRaycasts = true;
-            }
+            if (cg == null) cg = wrongFormatPanel.AddComponent<CanvasGroup>();
+            cg.alpha = 1f;
+            cg.interactable = true;
+            cg.blocksRaycasts = true;
             
             StartCoroutine(HideNotificationAfterDelay(wrongFormatPanel, 2f));
         }

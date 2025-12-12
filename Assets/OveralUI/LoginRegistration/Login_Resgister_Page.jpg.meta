@@ -113,10 +113,10 @@ TextureImporter:
       name: Login_Resgister_Page_0
       rect:
         serializedVersion: 2
-        x: 7
-        y: 11
-        width: 708
-        height: 1169
+        x: 0
+        y: 0
+        width: 510
+        height: 836
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -125,8 +125,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 59e9018f40a88224b963a5dd30397af2
-      internalID: -1415705727
+      spriteID: 72381382775a49d49a9c8cc187186313
+      internalID: -64870839
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 01b2c7ac521dc424cb5965eeecd95699
+    spriteID: dffa692211a1f8d45ade59f65d944a98
     internalID: 0
     vertices: []
     indices: 
@@ -145,7 +145,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Login_Resgister_Page_0: -1415705727
+      Login_Resgister_Page_0: -64870839
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
