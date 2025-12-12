@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Firebase;
 using Firebase.Auth;
 using Firebase.Database;
@@ -27,7 +28,9 @@ public class FirebaseController : MonoBehaviour
     public GameObject petSelectionPanel; // Choose between Pet 1 or Pet 2
     public GameObject pet1NameCreationPanel; // Pet 1 (Skeleton Warrior) name creation panel
     public GameObject pet2NameCreationPanel; // Pet 2 (Wolf Mage) name creation panel
-    public GameObject gamePanel; // The game menu shown after successful login
+
+    [Header("Scene Settings")]
+    public string gameSceneName = "GameScene"; // Name of the game scene to load
 
     [Header("Notification Panels")]
     public GameObject invalidLoginPanel; // "Invalid Login Details"
@@ -36,6 +39,10 @@ public class FirebaseController : MonoBehaviour
     public GameObject accountCreatedPanel; // "Account created successfully"
     public GameObject wrongFormatPanel; // "Wrong email or password format"
 
+    [Header("Scanning Screen")]
+    public GameObject scanningPanel; // Scanning screen panel
+    public float scanningDuration = 2f; // How long to show scanning screen
+
     private FirebaseAuth auth;
     private DatabaseReference dbReference;
 
@@ -43,6 +50,9 @@ public class FirebaseController : MonoBehaviour
     private string tempUserId;
     private string tempUserEmail;
     private string selectedPetType;
+
+    // Static storage for user data (persists across scenes)
+    public static UserProgress currentUserData;
 
     void Start()
     {
@@ -77,11 +87,13 @@ public class FirebaseController : MonoBehaviour
         if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
         if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
 
+        // Hide scanning panel initially
+        if (scanningPanel != null) scanningPanel.SetActive(false);
+
         // Start with start page visible
         if (startPage != null) startPage.SetActive(true);
         if (loginPanel != null) loginPanel.SetActive(false);
         if (registerPanel != null) registerPanel.SetActive(false);
-        if (gamePanel != null) gamePanel.SetActive(false);
     }
 
     // ================= REGISTER LOGIC =================
@@ -182,7 +194,7 @@ public class FirebaseController : MonoBehaviour
 
     public void SelectSkeletonWarrior()
     {
-        selectedPetType = "SkeletonWarrior";
+        selectedPetType = "robofox";
         Debug.Log("=== SelectSkeletonWarrior called - Going to Pet 1 Name Panel ===");
         Debug.Log("Pet Selection Panel: " + (petSelectionPanel != null ? "EXISTS" : "NULL"));
         Debug.Log("Pet 1 Name Creation Panel: " + (pet1NameCreationPanel != null ? "EXISTS" : "NULL"));
@@ -190,7 +202,6 @@ public class FirebaseController : MonoBehaviour
         if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
         if (loginPanel != null) loginPanel.SetActive(false);
         if (registerPanel != null) registerPanel.SetActive(false);
-        if (gamePanel != null) gamePanel.SetActive(false);
         if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
         
         if (pet1NameCreationPanel != null)
@@ -208,7 +219,7 @@ public class FirebaseController : MonoBehaviour
 
     public void SelectWolfMage()
     {
-        selectedPetType = "WolfMage";
+        selectedPetType = "robocat";
         Debug.Log("=== SelectWolfMage called - Going to Pet 2 Name Panel ===");
         Debug.Log("Pet Selection Panel: " + (petSelectionPanel != null ? "EXISTS" : "NULL"));
         Debug.Log("Pet 2 Name Creation Panel: " + (pet2NameCreationPanel != null ? "EXISTS" : "NULL"));
@@ -216,7 +227,6 @@ public class FirebaseController : MonoBehaviour
         if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
         if (loginPanel != null) loginPanel.SetActive(false);
         if (registerPanel != null) registerPanel.SetActive(false);
-        if (gamePanel != null) gamePanel.SetActive(false);
         if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
         
         if (pet2NameCreationPanel != null)
@@ -272,10 +282,11 @@ public class FirebaseController : MonoBehaviour
             {
                 Debug.Log("User profile saved with Pet: " + petType + ", Pet Name: " + petName);
                 
-                // Go to game menu
-                if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
-                if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
-                LoadGameScene();
+                // Store the new user data globally
+                currentUserData = userProgress;
+                
+                // Show scanning screen then load game
+                ShowScanningScreen();
             }
             else
             {
@@ -292,7 +303,6 @@ public class FirebaseController : MonoBehaviour
         if (startPage != null) startPage.SetActive(false);
         if (loginPanel != null) loginPanel.SetActive(false);
         if (registerPanel != null) registerPanel.SetActive(false);
-        if (gamePanel != null) gamePanel.SetActive(false);
         if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
         if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
         if (petSelectionPanel != null) petSelectionPanel.SetActive(true);
@@ -306,7 +316,6 @@ public class FirebaseController : MonoBehaviour
         if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
         if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
         if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
-        if (gamePanel != null) gamePanel.SetActive(false);
         if (registerPanel != null) registerPanel.SetActive(true);
     }
 
@@ -407,12 +416,17 @@ public class FirebaseController : MonoBehaviour
             DataSnapshot snapshot = dataTask.Result;
             string json = snapshot.GetRawJsonValue();
             
-            // Convert JSON back to Object
-            UserProgress loadedProgress = JsonUtility.FromJson<UserProgress>(json);
+            // Convert JSON back to Object and store globally
+            currentUserData = JsonUtility.FromJson<UserProgress>(json);
             
-            Debug.Log("Loaded Level: " + loadedProgress.level);
+            Debug.Log("=== User Data Loaded from Firebase ===");
+            Debug.Log("Email: " + currentUserData.email);
+            Debug.Log("Level: " + currentUserData.level);
+            Debug.Log("XP: " + currentUserData.xp);
+            Debug.Log("Pet: " + currentUserData.pet);
+            Debug.Log("Pet Name: " + currentUserData.petName);
             
-            // Show "Login Successful" and go to game menu
+            // Show "Login Successful" notification, then scanning screen, then load game
             ShowLoginSuccessNotification();
         }
     }
@@ -427,7 +441,6 @@ public class FirebaseController : MonoBehaviour
         if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
         if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
         if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
-        if (gamePanel != null) gamePanel.SetActive(false);
         if (loginPanel != null) loginPanel.SetActive(true);
         HideAllNotifications();
     }
@@ -440,7 +453,6 @@ public class FirebaseController : MonoBehaviour
         if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
         if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
         if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
-        if (gamePanel != null) gamePanel.SetActive(false);
         if (registerPanel != null) registerPanel.SetActive(true);
         HideAllNotifications();
     }
@@ -453,7 +465,6 @@ public class FirebaseController : MonoBehaviour
         if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
         if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
         if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
-        if (gamePanel != null) gamePanel.SetActive(false);
         if (registerPanel != null) registerPanel.SetActive(true);
         HideAllNotifications();
         
@@ -470,7 +481,6 @@ public class FirebaseController : MonoBehaviour
         if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
         if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
         if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
-        if (gamePanel != null) gamePanel.SetActive(false);
         if (loginPanel != null) loginPanel.SetActive(true);
         HideAllNotifications();
         
@@ -481,13 +491,8 @@ public class FirebaseController : MonoBehaviour
 
     void LoadGameScene()
     {
-        if (startPage != null) startPage.SetActive(false);
-        if (loginPanel != null) loginPanel.SetActive(false);
-        if (registerPanel != null) registerPanel.SetActive(false);
-        if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
-        if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
-        if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
-        if (gamePanel != null) gamePanel.SetActive(true);
+        Debug.Log("Loading game scene: " + gameSceneName);
+        SceneManager.LoadScene(gameSceneName);
     }
 
     // ================= NOTIFICATION HANDLERS =================
@@ -515,17 +520,17 @@ public class FirebaseController : MonoBehaviour
 
     private void ShowLoginSuccessNotification()
     {
-        Debug.Log("Notification: Login Successful - Loading game menu");
+        Debug.Log("Notification: Login Successful - Starting scanning sequence");
         HideAllNotifications();
         if (loginSuccessPanel != null)
         {
             loginSuccessPanel.transform.SetAsLastSibling();
             loginSuccessPanel.SetActive(true);
-            StartCoroutine(HideNotificationAndLoadGame(loginSuccessPanel, 2f));
+            StartCoroutine(HideNotificationShowScanningAndLoadGame(loginSuccessPanel, 2f));
         }
         else
         {
-            LoadGameScene();
+            ShowScanningScreen();
         }
     }
 
@@ -596,7 +601,6 @@ public class FirebaseController : MonoBehaviour
         if (startPage != null) startPage.SetActive(false);
         if (registerPanel != null) registerPanel.SetActive(false);
         if (loginPanel != null) loginPanel.SetActive(false);
-        if (gamePanel != null) gamePanel.SetActive(false);
         if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
         if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
         if (petSelectionPanel != null) petSelectionPanel.SetActive(true);
@@ -613,6 +617,54 @@ public class FirebaseController : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
         if (panel != null) panel.SetActive(false);
+    }
+
+    private IEnumerator HideNotificationShowScanningAndLoadGame(GameObject panel, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (panel != null) panel.SetActive(false);
+        ShowScanningScreen();
+    }
+
+    private void ShowScanningScreen()
+    {
+        Debug.Log("=== Starting Scanning Screen ===");
+        // Hide all panels
+        if (startPage != null) startPage.SetActive(false);
+        if (loginPanel != null) loginPanel.SetActive(false);
+        if (registerPanel != null) registerPanel.SetActive(false);
+        if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
+        if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
+        if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
+        HideAllNotifications();
+
+        // Show scanning panel
+        if (scanningPanel != null)
+        {
+            scanningPanel.SetActive(true);
+            StartCoroutine(HideScanningAndLoadGame(scanningDuration));
+        }
+        else
+        {
+            Debug.LogWarning("Scanning panel not assigned! Loading game directly.");
+            LoadGameScene();
+        }
+    }
+
+    private IEnumerator HideScanningAndLoadGame(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (scanningPanel != null) scanningPanel.SetActive(false);
+        
+        Debug.Log("=== Scanning Complete - Loading Game with User Data ===");
+        if (currentUserData != null)
+        {
+            Debug.Log("Loading game for: " + currentUserData.email);
+            Debug.Log("Pet: " + currentUserData.petName + " (" + currentUserData.pet + ")");
+            Debug.Log("Level: " + currentUserData.level + " | XP: " + currentUserData.xp);
+        }
+        
+        LoadGameScene();
     }
 
     private IEnumerator HideNotificationAndLoadGame(GameObject panel, float delay)
