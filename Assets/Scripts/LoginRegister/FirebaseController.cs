@@ -39,10 +39,6 @@ public class FirebaseController : MonoBehaviour
     public GameObject accountCreatedPanel; // "Account created successfully"
     public GameObject wrongFormatPanel; // "Wrong email or password format"
 
-    [Header("Scanning Screen")]
-    public GameObject scanningPanel; // Scanning screen panel
-    public float scanningDuration = 2f; // How long to show scanning screen
-
     private FirebaseAuth auth;
     private DatabaseReference dbReference;
 
@@ -50,9 +46,6 @@ public class FirebaseController : MonoBehaviour
     private string tempUserId;
     private string tempUserEmail;
     private string selectedPetType;
-
-    // Static storage for user data (persists across scenes)
-    public static UserProgress currentUserData;
 
     void Start()
     {
@@ -86,9 +79,6 @@ public class FirebaseController : MonoBehaviour
         if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
         if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
         if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
-
-        // Hide scanning panel initially
-        if (scanningPanel != null) scanningPanel.SetActive(false);
 
         // Start with start page visible
         if (startPage != null) startPage.SetActive(true);
@@ -282,11 +272,10 @@ public class FirebaseController : MonoBehaviour
             {
                 Debug.Log("User profile saved with Pet: " + petType + ", Pet Name: " + petName);
                 
-                // Store the new user data globally
-                currentUserData = userProgress;
-                
-                // Show scanning screen then load game
-                ShowScanningScreen();
+                // Go to game menu
+                if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
+                if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
+                LoadGameScene();
             }
             else
             {
@@ -416,17 +405,12 @@ public class FirebaseController : MonoBehaviour
             DataSnapshot snapshot = dataTask.Result;
             string json = snapshot.GetRawJsonValue();
             
-            // Convert JSON back to Object and store globally
-            currentUserData = JsonUtility.FromJson<UserProgress>(json);
+            // Convert JSON back to Object
+            UserProgress loadedProgress = JsonUtility.FromJson<UserProgress>(json);
             
-            Debug.Log("=== User Data Loaded from Firebase ===");
-            Debug.Log("Email: " + currentUserData.email);
-            Debug.Log("Level: " + currentUserData.level);
-            Debug.Log("XP: " + currentUserData.xp);
-            Debug.Log("Pet: " + currentUserData.pet);
-            Debug.Log("Pet Name: " + currentUserData.petName);
+            Debug.Log("Loaded Level: " + loadedProgress.level);
             
-            // Show "Login Successful" notification, then scanning screen, then load game
+            // Show "Login Successful" and go to game menu
             ShowLoginSuccessNotification();
         }
     }
@@ -520,17 +504,17 @@ public class FirebaseController : MonoBehaviour
 
     private void ShowLoginSuccessNotification()
     {
-        Debug.Log("Notification: Login Successful - Starting scanning sequence");
+        Debug.Log("Notification: Login Successful - Loading game menu");
         HideAllNotifications();
         if (loginSuccessPanel != null)
         {
             loginSuccessPanel.transform.SetAsLastSibling();
             loginSuccessPanel.SetActive(true);
-            StartCoroutine(HideNotificationShowScanningAndLoadGame(loginSuccessPanel, 2f));
+            StartCoroutine(HideNotificationAndLoadGame(loginSuccessPanel, 2f));
         }
         else
         {
-            ShowScanningScreen();
+            LoadGameScene();
         }
     }
 
@@ -617,54 +601,6 @@ public class FirebaseController : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
         if (panel != null) panel.SetActive(false);
-    }
-
-    private IEnumerator HideNotificationShowScanningAndLoadGame(GameObject panel, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        if (panel != null) panel.SetActive(false);
-        ShowScanningScreen();
-    }
-
-    private void ShowScanningScreen()
-    {
-        Debug.Log("=== Starting Scanning Screen ===");
-        // Hide all panels
-        if (startPage != null) startPage.SetActive(false);
-        if (loginPanel != null) loginPanel.SetActive(false);
-        if (registerPanel != null) registerPanel.SetActive(false);
-        if (petSelectionPanel != null) petSelectionPanel.SetActive(false);
-        if (pet1NameCreationPanel != null) pet1NameCreationPanel.SetActive(false);
-        if (pet2NameCreationPanel != null) pet2NameCreationPanel.SetActive(false);
-        HideAllNotifications();
-
-        // Show scanning panel
-        if (scanningPanel != null)
-        {
-            scanningPanel.SetActive(true);
-            StartCoroutine(HideScanningAndLoadGame(scanningDuration));
-        }
-        else
-        {
-            Debug.LogWarning("Scanning panel not assigned! Loading game directly.");
-            LoadGameScene();
-        }
-    }
-
-    private IEnumerator HideScanningAndLoadGame(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        if (scanningPanel != null) scanningPanel.SetActive(false);
-        
-        Debug.Log("=== Scanning Complete - Loading Game with User Data ===");
-        if (currentUserData != null)
-        {
-            Debug.Log("Loading game for: " + currentUserData.email);
-            Debug.Log("Pet: " + currentUserData.petName + " (" + currentUserData.pet + ")");
-            Debug.Log("Level: " + currentUserData.level + " | XP: " + currentUserData.xp);
-        }
-        
-        LoadGameScene();
     }
 
     private IEnumerator HideNotificationAndLoadGame(GameObject panel, float delay)
