@@ -507,6 +507,7 @@ public class FirebaseController : MonoBehaviour
         HideAllNotifications();
         if (invalidLoginPanel != null)
         {
+            invalidLoginPanel.transform.SetAsLastSibling();
             invalidLoginPanel.SetActive(true);
             StartCoroutine(HideNotificationAfterDelay(invalidLoginPanel, 2f));
         }
@@ -518,6 +519,7 @@ public class FirebaseController : MonoBehaviour
         HideAllNotifications();
         if (loginSuccessPanel != null)
         {
+            loginSuccessPanel.transform.SetAsLastSibling();
             loginSuccessPanel.SetActive(true);
             StartCoroutine(HideNotificationAndLoadGame(loginSuccessPanel, 2f));
         }
@@ -533,6 +535,7 @@ public class FirebaseController : MonoBehaviour
         HideAllNotifications();
         if (accountExistsPanel != null)
         {
+            accountExistsPanel.transform.SetAsLastSibling();
             accountExistsPanel.SetActive(true);
             StartCoroutine(HideNotificationAndSwitchToLogin(accountExistsPanel, 2f));
         }
@@ -548,6 +551,7 @@ public class FirebaseController : MonoBehaviour
         HideAllNotifications();
         if (accountCreatedPanel != null)
         {
+            accountCreatedPanel.transform.SetAsLastSibling();
             accountCreatedPanel.SetActive(true);
             StartCoroutine(HideNotificationAndShowPetSelection(accountCreatedPanel, 2f));
         }
@@ -561,10 +565,28 @@ public class FirebaseController : MonoBehaviour
     {
         Debug.Log("Notification: Wrong email or password format");
         HideAllNotifications();
+        
         if (wrongFormatPanel != null)
         {
+            wrongFormatPanel.transform.SetAsLastSibling();
             wrongFormatPanel.SetActive(true);
+            
+            Debug.Log("Wrong Format Panel - activeSelf: " + wrongFormatPanel.activeSelf);
+            Debug.Log("Wrong Format Panel - activeInHierarchy: " + wrongFormatPanel.activeInHierarchy);
+            
+            CanvasGroup cg = wrongFormatPanel.GetComponent<CanvasGroup>();
+            if (cg != null)
+            {
+                cg.alpha = 1f;
+                cg.interactable = true;
+                cg.blocksRaycasts = true;
+            }
+            
             StartCoroutine(HideNotificationAfterDelay(wrongFormatPanel, 2f));
+        }
+        else
+        {
+            Debug.LogError("wrongFormatPanel is NULL!");
         }
     }
 
