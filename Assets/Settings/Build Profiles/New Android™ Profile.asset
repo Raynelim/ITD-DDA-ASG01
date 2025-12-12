@@ -20,8 +20,10 @@ MonoBehaviour:
     rid: 5361885240574869576
   m_OverrideGlobalSceneList: 1
   m_Scenes:
-  - m_enabled: 1
+  - m_enabled: 0
     m_path: Assets/Scenes/SampleScene.unity
+  - m_enabled: 1
+    m_path: Assets/Scenes/Attempt2.unity
   m_ScriptingDefines:
   - USE_AR
   m_PlayerSettingsYaml:
