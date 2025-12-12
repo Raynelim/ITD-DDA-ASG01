@@ -5,6 +5,7 @@
 
 using UnityEngine;
 using UnityEngine.AI;
+using System.Linq;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class PetController : MonoBehaviour
@@ -140,5 +141,38 @@ public class PetController : MonoBehaviour
 
         result = center;
         return false;
+    }
+
+    private void LateUpdate()
+    {
+      if (isGrabbed) return;
+
+        // Look for consumables
+        WorldConsumable nearest = FindNearestConsumable();
+        if (nearest != null)
+        {
+            float dist = Vector3.Distance(transform.position, nearest.transform.position);
+
+             if (dist > stoppingDistance)
+            {
+                agent.SetDestination(nearest.transform.position);
+            }
+            else
+            {
+                // At the object → consume it
+                nearest.Consume(GetComponent<PetStats>());
+                wanderTimer = 0; 
+            }
+        }
+    }
+
+    private WorldConsumable FindNearestConsumable()
+    {
+        WorldConsumable[] all = FindObjectsOfType<WorldConsumable>();
+        if (all.Length == 0) return null;
+
+        return all
+            .OrderBy(c => Vector3.Distance(transform.position, c.transform.position))
+            .FirstOrDefault();
     }
 }

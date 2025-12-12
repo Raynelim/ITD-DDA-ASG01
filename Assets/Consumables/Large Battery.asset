@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5370912566dd6384c9744191d0fcc74b, type: 3}
+  m_Name: Large Battery
+  m_EditorClassIdentifier: 
+  consumableName: Large Battery
+  uiMaterial: {fileID: 2100000, guid: 539becb142c146a4e9c8adbad17bc8b8, type: 2}
+  worldPrefab: {fileID: 919132149155446097, guid: 078871a4f7475d940a4eab30c25d0b86, type: 3}
+  xpBoost: 5
+  happinessBoost: 5

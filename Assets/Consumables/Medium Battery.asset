@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5370912566dd6384c9744191d0fcc74b, type: 3}
+  m_Name: Medium Battery
+  m_EditorClassIdentifier: 
+  consumableName: Medium Battery
+  uiMaterial: {fileID: 2100000, guid: 510f5ab34b0db1b46be6d8708797b967, type: 2}
+  worldPrefab: {fileID: 919132149155446097, guid: 20f18111b7a34f043883dfdd5570209a, type: 3}
+  xpBoost: 3
+  happinessBoost: 3
