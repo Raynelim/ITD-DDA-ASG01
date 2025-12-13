@@ -82,6 +82,9 @@ public class UI_ConsumableDragHandler : MonoBehaviour,
 
     private bool CheckBatteryInventory()
     {
+        if (DevSettings.Instance != null && DevSettings.Instance.devModeEnabled)
+            return true;
+
         var data = carousel.Current;
         int currentCount = 0;
 
@@ -100,6 +103,7 @@ public class UI_ConsumableDragHandler : MonoBehaviour,
 
         return currentCount >= data.batteryCost;
     }
+
 
     private void DeductBattery(string batteryType, int amount)
     {
