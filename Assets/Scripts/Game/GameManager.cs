@@ -402,9 +402,18 @@ public class GameManager : MonoBehaviour
     public void OnFeedButtonPress()
     {
         Debug.Log("Feed button pressed - Opening feed menu");
-        CloseMenu(); // Close menu when action is triggered
-        // TODO: Open feeding UI/menu
-        // This will be implemented in the eating script
+        CloseMenu(); // Close main menu when action is triggered
+        
+        // Open the consumable/food menu
+        ConsumableMenu foodMenu = FindObjectOfType<ConsumableMenu>();
+        if (foodMenu != null)
+        {
+            foodMenu.ToggleMenu();
+        }
+        else
+        {
+            Debug.LogWarning("ConsumableMenu not found in scene!");
+        }
     }
 
     public void OnSleepButtonPress()

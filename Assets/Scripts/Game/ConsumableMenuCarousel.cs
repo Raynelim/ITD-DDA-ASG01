@@ -5,8 +5,8 @@ using TMPro;
 public class ConsumableMenuCarousel : MonoBehaviour
 {
     [Header("UI")]
-    [SerializeField] private Graphic uiElement;  
-    // Graphic works for both Image and RawImage
+    [SerializeField] private GameObject uiElement;  
+    // Can be Panel, Image, or RawImage GameObject
 
     [Header("Text Displays")]
     [SerializeField] private TextMeshProUGUI nameText;
@@ -39,7 +39,11 @@ public class ConsumableMenuCarousel : MonoBehaviour
     {
         if (uiElement != null && Current.uiMaterial != null)
         {
-            uiElement.material = Current.uiMaterial;
+            Graphic graphic = uiElement.GetComponent<Graphic>();
+            if (graphic != null)
+            {
+                graphic.material = Current.uiMaterial;
+            }
         }
 
         // Update name text
