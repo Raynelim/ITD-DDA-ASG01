@@ -49,6 +49,10 @@ public class GameManager : MonoBehaviour
     public float mediumBatteryInterval = 30f; // 30 seconds
     public float largeBatteryInterval = 60f; // 60 seconds (1 minute)
 
+    [Header("Passive XP Gain")]
+    public float passiveXPInterval = 300f; // 300 seconds (5 minutes)
+    public int passiveXPAmount = 1; // XP gained per interval
+
     [Header("Buttons")]
     public GameObject feedButton;
     public GameObject sleepButton;
@@ -72,6 +76,10 @@ public class GameManager : MonoBehaviour
     private float smallBatteryTimer;
     private float mediumBatteryTimer;
     private float largeBatteryTimer;
+
+    // Passive XP timer
+    private float passiveXPTimer;
+    private bool isSleepModeActive = false;
 
     void Start()
     {
@@ -97,6 +105,9 @@ public class GameManager : MonoBehaviour
         mediumBatteryTimer = mediumBatteryInterval;
         largeBatteryTimer = largeBatteryInterval;
 
+        // Initialize passive XP timer
+        passiveXPTimer = passiveXPInterval;
+
         // Load user data and spawn pet
         LoadPlayerData();
     }
@@ -105,6 +116,9 @@ public class GameManager : MonoBehaviour
     {
         // Update battery collection timers
         UpdateBatteryTimers();
+
+        // Update passive XP timer
+        UpdatePassiveXP();
     }
 
     void UpdateBatteryTimers()
@@ -168,6 +182,24 @@ public class GameManager : MonoBehaviour
             int minutes = Mathf.FloorToInt(largeBatteryTimer / 60f);
             int seconds = Mathf.FloorToInt(largeBatteryTimer % 60f);
             largeBatteryTimerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+        }
+    }
+
+    void UpdatePassiveXP()
+    {
+        // Only run passive XP timer if sleep mode is active
+        if (!isSleepModeActive)
+            return;
+
+        // Passive XP Timer
+        passiveXPTimer -= Time.deltaTime;
+        if (passiveXPTimer <= 0f)
+        {
+            // Gain passive XP
+            AddXP(passiveXPAmount);
+            Debug.Log($"Passive XP gained from sleep! +{passiveXPAmount} XP");
+            // Reset timer
+            passiveXPTimer = passiveXPInterval;
         }
     }
 
@@ -377,9 +409,23 @@ public class GameManager : MonoBehaviour
 
     public void OnSleepButtonPress()
     {
-        Debug.Log("Sleep button pressed - Saving game");
+        // Toggle sleep mode
+        isSleepModeActive = !isSleepModeActive;
+
+        if (isSleepModeActive)
+        {
+            Debug.Log("Sleep mode activated - Passive XP timer started");
+            // Start the timer from the beginning
+            passiveXPTimer = passiveXPInterval;
+        }
+        else
+        {
+            Debug.Log("Sleep mode deactivated - Passive XP timer reset (XP gained is saved)");
+            // Reset timer when exiting sleep mode
+            passiveXPTimer = passiveXPInterval;
+        }
+
         CloseMenu(); // Close menu when action is triggered
-        StartCoroutine(SavePlayerData());
     }
 
     // ================= MENU TOGGLE =================
@@ -512,7 +558,8 @@ public class GameManager : MonoBehaviour
 
     // ================= PUBLIC METHODS FOR OTHER SCRIPTS =================
 
-    // Call this when pet gains XP (from feeding, etc.)
+    // Call this when pet gains XP (from feeding, passive gain, etc.)
+    // Updates in real-time and auto-saves to Firebase
     public void AddXP(int amount)
     {
         int oldLevel = UserDataManager.currentLevel;
@@ -538,7 +585,7 @@ public class GameManager : MonoBehaviour
         AutoSave();
     }
 
-    // Update battery counts in real-time
+    // Update battery counts in real-time (auto-saves to Firebase)
     public void AddBattery(string batteryType, int amount)
     {
         switch (batteryType.ToLower())
