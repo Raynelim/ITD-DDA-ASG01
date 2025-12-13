@@ -182,10 +182,10 @@ public class FirebaseController : MonoBehaviour
 
     // ================= PET SELECTION & NAMING =================
 
-    public void SelectSkeletonWarrior()
+    public void SelectRoboFox()
     {
         selectedPetType = "robofox";
-        Debug.Log("=== SelectSkeletonWarrior called - Going to Pet 1 Name Panel ===");
+        Debug.Log("=== SelectRoboFox called - Going to Pet 1 Name Panel ===");
         Debug.Log("Pet Selection Panel: " + (petSelectionPanel != null ? "EXISTS" : "NULL"));
         Debug.Log("Pet 1 Name Creation Panel: " + (pet1NameCreationPanel != null ? "EXISTS" : "NULL"));
         
@@ -197,7 +197,7 @@ public class FirebaseController : MonoBehaviour
         if (pet1NameCreationPanel != null)
         {
             pet1NameCreationPanel.SetActive(true);
-            Debug.Log("Pet 1 (Skeleton Warrior) Name Panel set to ACTIVE");
+            Debug.Log("Pet 1 (RoboFox) Name Panel set to ACTIVE");
             Debug.Log("Pet1NameCreationPanel activeSelf: " + pet1NameCreationPanel.activeSelf);
             Debug.Log("Pet1NameCreationPanel activeInHierarchy: " + pet1NameCreationPanel.activeInHierarchy);
         }
@@ -207,10 +207,10 @@ public class FirebaseController : MonoBehaviour
         }
     }
 
-    public void SelectWolfMage()
+    public void SelectRoboCat()
     {
         selectedPetType = "robocat";
-        Debug.Log("=== SelectWolfMage called - Going to Pet 2 Name Panel ===");
+        Debug.Log("=== SelectRoboCat called - Going to Pet 2 Name Panel ===");
         Debug.Log("Pet Selection Panel: " + (petSelectionPanel != null ? "EXISTS" : "NULL"));
         Debug.Log("Pet 2 Name Creation Panel: " + (pet2NameCreationPanel != null ? "EXISTS" : "NULL"));
         
@@ -222,7 +222,7 @@ public class FirebaseController : MonoBehaviour
         if (pet2NameCreationPanel != null)
         {
             pet2NameCreationPanel.SetActive(true);
-            Debug.Log("Pet 2 (Wolf Mage) Name Panel set to ACTIVE");
+            Debug.Log("Pet 2 (Robocat) Name Panel set to ACTIVE");
             Debug.Log("Pet2NameCreationPanel activeSelf: " + pet2NameCreationPanel.activeSelf);
             Debug.Log("Pet2NameCreationPanel activeInHierarchy: " + pet2NameCreationPanel.activeInHierarchy);
         }

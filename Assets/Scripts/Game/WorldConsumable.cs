@@ -17,10 +17,13 @@ public class WorldConsumable : MonoBehaviour
             animator.PlayPickup();
         }
 
+        // Note: Battery is already deducted when spawned via drag handler
+        // Just apply the effects here
         stats.AddXP(data.xpBoost);
         stats.AddHappiness(data.happinessBoost);
 
-        Destroy(gameObject, 2f); // matches pickup animation length
-}
+        Debug.Log($"Pet consumed {data.consumableName} - +{data.xpBoost} XP, +{data.happinessBoost} Happiness");
 
+        Destroy(gameObject, 2f); // matches pickup animation length
+    }
 }
