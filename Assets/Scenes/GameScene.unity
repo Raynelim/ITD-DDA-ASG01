@@ -197,7 +197,7 @@ MonoBehaviour:
   robofoxStage1Prefab: {fileID: 0}
   robofoxStage2Prefab: {fileID: 0}
   robofoxStage3Prefab: {fileID: 0}
-  robocatStage1Prefab: {fileID: 0}
+  robocatStage1Prefab: {fileID: 869153482}
   robocatStage2Prefab: {fileID: 0}
   robocatStage3Prefab: {fileID: 0}
   petSpawnPoint: {fileID: 744436435}
@@ -1080,7 +1080,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5355181055366556231, guid: a96cd23d8739d6f41880a7042f5926a4, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5585959461277675563, guid: a96cd23d8739d6f41880a7042f5926a4, type: 3}
       propertyPath: m_LocalScale.x
@@ -1108,7 +1108,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5644678633159899780, guid: a96cd23d8739d6f41880a7042f5926a4, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6928851731925563986, guid: a96cd23d8739d6f41880a7042f5926a4, type: 3}
       propertyPath: m_Enabled
