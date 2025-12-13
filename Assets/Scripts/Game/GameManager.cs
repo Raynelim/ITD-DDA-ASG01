@@ -39,10 +39,26 @@ public class GameManager : MonoBehaviour
     public TMP_Text mediumBatteryText; // Display medium battery count
     public TMP_Text largeBatteryText; // Display large battery count
 
+    [Header("Timer UI Elements")]
+    public TMP_Text smallBatteryTimerText; // Countdown for next small battery
+    public TMP_Text mediumBatteryTimerText; // Countdown for next medium battery
+    public TMP_Text largeBatteryTimerText; // Countdown for next large battery
+
+    [Header("Battery Collection Timers")]
+    public float smallBatteryInterval = 10f; // 10 seconds
+    public float mediumBatteryInterval = 30f; // 30 seconds
+    public float largeBatteryInterval = 60f; // 60 seconds (1 minute)
+
     [Header("Buttons")]
     public GameObject feedButton;
     public GameObject sleepButton;
     public GameObject logoutButton;
+
+    [Header("Expandable Menu")]
+    public GameObject menuPanel; // The expandable menu containing buttons and timers
+    public GameObject menuToggleButton; // Button to open/close the menu
+    public TMP_Text menuToggleButtonText; // Text on toggle button ("Menu" or "Close")
+    private bool isMenuOpen = false;
 
     [Header("Logout Confirmation")]
     public GameObject logoutConfirmationPanel; // "Are you sure you want to log out?"
@@ -51,6 +67,11 @@ public class GameManager : MonoBehaviour
 
     private DatabaseReference dbReference;
     private GameObject currentPet;
+
+    // Battery collection timers
+    private float smallBatteryTimer;
+    private float mediumBatteryTimer;
+    private float largeBatteryTimer;
 
     void Start()
     {
@@ -65,8 +86,89 @@ public class GameManager : MonoBehaviour
         if (logoutConfirmationPanel != null)
             logoutConfirmationPanel.SetActive(false);
 
+        // Hide menu panel initially (collapsed)
+        if (menuPanel != null)
+            menuPanel.SetActive(false);
+        isMenuOpen = false;
+        UpdateMenuToggleButtonText();
+
+        // Initialize battery collection timers
+        smallBatteryTimer = smallBatteryInterval;
+        mediumBatteryTimer = mediumBatteryInterval;
+        largeBatteryTimer = largeBatteryInterval;
+
         // Load user data and spawn pet
         LoadPlayerData();
+    }
+
+    void Update()
+    {
+        // Update battery collection timers
+        UpdateBatteryTimers();
+    }
+
+    void UpdateBatteryTimers()
+    {
+        // Small Battery Timer
+        smallBatteryTimer -= Time.deltaTime;
+        if (smallBatteryTimer <= 0f)
+        {
+            // Collect small battery
+            AddBattery("small", 1);
+            Debug.Log("Small battery collected!");
+            // Reset timer
+            smallBatteryTimer = smallBatteryInterval;
+        }
+
+        // Medium Battery Timer
+        mediumBatteryTimer -= Time.deltaTime;
+        if (mediumBatteryTimer <= 0f)
+        {
+            // Collect medium battery
+            AddBattery("medium", 1);
+            Debug.Log("Medium battery collected!");
+            // Reset timer
+            mediumBatteryTimer = mediumBatteryInterval;
+        }
+
+        // Large Battery Timer
+        largeBatteryTimer -= Time.deltaTime;
+        if (largeBatteryTimer <= 0f)
+        {
+            // Collect large battery
+            AddBattery("large", 1);
+            Debug.Log("Large battery collected!");
+            // Reset timer
+            largeBatteryTimer = largeBatteryInterval;
+        }
+
+        // Update timer display
+        UpdateTimerDisplay();
+    }
+
+    void UpdateTimerDisplay()
+    {
+        // Display countdown timers in MM:SS format
+        if (smallBatteryTimerText != null)
+        {
+            int minutes = Mathf.FloorToInt(smallBatteryTimer / 60f);
+            int seconds = Mathf.FloorToInt(smallBatteryTimer % 60f);
+            smallBatteryTimerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+        }
+
+        if (mediumBatteryTimerText != null)
+        {
+            int minutes = Mathf.FloorToInt(mediumBatteryTimer / 60f);
+            int seconds = Mathf.FloorToInt(mediumBatteryTimer % 60f);
+            mediumBatteryTimerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+        }
+
+        if (largeBatteryTimerText != null)
+        {
+            int minutes = Mathf.FloorToInt(largeBatteryTimer / 60f);
+            int seconds = Mathf.FloorToInt(largeBatteryTimer % 60f);
+            largeBatteryTimerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+        }
     }
 
     void LoadPlayerData()
@@ -268,6 +370,7 @@ public class GameManager : MonoBehaviour
     public void OnFeedButtonPress()
     {
         Debug.Log("Feed button pressed - Opening feed menu");
+        CloseMenu(); // Close menu when action is triggered
         // TODO: Open feeding UI/menu
         // This will be implemented in the eating script
     }
@@ -275,7 +378,52 @@ public class GameManager : MonoBehaviour
     public void OnSleepButtonPress()
     {
         Debug.Log("Sleep button pressed - Saving game");
+        CloseMenu(); // Close menu when action is triggered
         StartCoroutine(SavePlayerData());
+    }
+
+    // ================= MENU TOGGLE =================
+
+    public void OnMenuToggleButtonPress()
+    {
+        if (isMenuOpen)
+        {
+            CloseMenu();
+        }
+        else
+        {
+            OpenMenu();
+        }
+    }
+
+    void OpenMenu()
+    {
+        if (menuPanel != null)
+        {
+            menuPanel.SetActive(true);
+            isMenuOpen = true;
+            UpdateMenuToggleButtonText();
+            Debug.Log("Menu opened");
+        }
+    }
+
+    void CloseMenu()
+    {
+        if (menuPanel != null)
+        {
+            menuPanel.SetActive(false);
+            isMenuOpen = false;
+            UpdateMenuToggleButtonText();
+            Debug.Log("Menu closed");
+        }
+    }
+
+    void UpdateMenuToggleButtonText()
+    {
+        if (menuToggleButtonText != null)
+        {
+            menuToggleButtonText.text = isMenuOpen ? "Close" : "Menu";
+        }
     }
 
     // ================= LOGOUT SYSTEM =================
@@ -283,6 +431,7 @@ public class GameManager : MonoBehaviour
     public void OnLogoutButtonPress()
     {
         Debug.Log("Logout button pressed - Showing confirmation");
+        CloseMenu(); // Close menu when showing logout confirmation
         if (logoutConfirmationPanel != null)
         {
             logoutConfirmationPanel.SetActive(true);

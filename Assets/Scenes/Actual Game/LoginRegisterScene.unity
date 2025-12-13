@@ -299,7 +299,7 @@ MonoBehaviour:
   petSelectionPanel: {fileID: 2125057973}
   pet1NameCreationPanel: {fileID: 1645253322}
   pet2NameCreationPanel: {fileID: 833034389}
-  gameSceneName: GameScene
+  gameSceneName: DemoScene
   invalidLoginPanel: {fileID: 1133139447}
   loginSuccessPanel: {fileID: 750512744}
   accountExistsPanel: {fileID: 700015300}

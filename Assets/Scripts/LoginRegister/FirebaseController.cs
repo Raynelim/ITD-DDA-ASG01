@@ -30,7 +30,7 @@ public class FirebaseController : MonoBehaviour
     public GameObject pet2NameCreationPanel; // Pet 2 (Wolf Mage) name creation panel
 
     [Header("Scene Settings")]
-    public string gameSceneName = "GameScene"; // Name of the game scene to load
+    public string gameSceneName = "DemoScene"; // Name of the game scene to load
 
     [Header("Notification Panels")]
     public GameObject invalidLoginPanel; // "Invalid Login Details"
