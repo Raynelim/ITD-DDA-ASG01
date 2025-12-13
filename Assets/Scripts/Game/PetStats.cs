@@ -22,9 +22,4 @@ public class PetStats : MonoBehaviour
         }
     }
 
-    public void AddHappiness(int amount)
-    {
-        happiness += amount;
-        Debug.Log("Happiness: " + happiness);
-    }
 }

@@ -201,6 +201,16 @@ public class GameManager : MonoBehaviour
             // Reset timer
             passiveXPTimer = passiveXPInterval;
         }
+
+        if (DevSettings.Instance != null && DevSettings.Instance.devModeEnabled)
+        {
+            Debug.Log("DEV MODE ENABLED → Overriding battery counts");
+
+            UserDataManager.currentSmallBattery = DevSettings.Instance.smallBattery;
+            UserDataManager.currentMediumBattery = DevSettings.Instance.mediumBattery;
+            UserDataManager.currentLargeBattery = DevSettings.Instance.largeBattery;
+        }
+
     }
 
     void LoadPlayerData()
@@ -620,8 +630,14 @@ public class GameManager : MonoBehaviour
     // Use battery for feeding
     public bool UseBattery(string batteryType, int amount = 1)
     {
+        if (DevSettings.Instance != null && DevSettings.Instance.devModeEnabled)
+        {
+            Debug.Log($"[DEV MODE] Ignoring battery usage: {batteryType}");
+            return true;
+        }
+
         bool success = false;
-        
+
         switch (batteryType.ToLower())
         {
             case "small":
@@ -631,6 +647,7 @@ public class GameManager : MonoBehaviour
                     success = true;
                 }
                 break;
+
             case "medium":
                 if (UserDataManager.currentMediumBattery >= amount)
                 {
@@ -638,28 +655,25 @@ public class GameManager : MonoBehaviour
                     success = true;
                 }
                 break;
+
             case "large":
                 if (UserDataManager.currentLargeBattery >= amount)
                 {
                     UserDataManager.currentLargeBattery -= amount;
                     success = true;
-                }
+               }
                 break;
         }
-        
+
         if (success)
         {
-            Debug.Log($"Used {amount} {batteryType} battery");
             RefreshUI();
             AutoSave();
         }
-        else
-        {
-            Debug.LogWarning($"Not enough {batteryType} batteries!");
-        }
-        
-        return success;
-    }
+
+    return success;
+}
+
 
     // Call this after feeding or gaining XP to update UI
     public void RefreshUI()
