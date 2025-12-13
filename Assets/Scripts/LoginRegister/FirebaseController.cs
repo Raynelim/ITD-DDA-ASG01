@@ -738,6 +738,7 @@ public class UserProgress
     public string email;
     public string pet; // Pet type (robofox, robocat)
     public string petName; // Custom pet name
+    public int petStage; // Evolution stage (1, 2, 3)
     public int level;
     public int xp;
     public Inventory inventory;
@@ -749,18 +750,20 @@ public class UserProgress
         this.email = email;
         this.pet = pet;
         this.petName = petName;
+        this.petStage = 1; // New pets start at stage 1
         this.level = level;
         this.xp = xp;
         this.inventory = new Inventory(0, 0, 0);
     }
 
-    // Full constructor with inventory
-    public UserProgress(string firebaseId, string email, string pet, string petName, int level, int xp, int smallBattery, int mediumBattery, int largeBattery)
+    // Full constructor with inventory and stage
+    public UserProgress(string firebaseId, string email, string pet, string petName, int petStage, int level, int xp, int smallBattery, int mediumBattery, int largeBattery)
     {
         this.firebaseId = firebaseId;
         this.email = email;
         this.pet = pet;
         this.petName = petName;
+        this.petStage = petStage;
         this.level = level;
         this.xp = xp;
         this.inventory = new Inventory(smallBattery, mediumBattery, largeBattery);
@@ -778,6 +781,7 @@ public static class UserDataManager
     public static int currentXP;
     public static string currentPetType; // robofox or robocat
     public static string currentPetName;
+    public static int currentPetStage; // Evolution stage (1, 2, 3)
     public static int currentSmallBattery;
     public static int currentMediumBattery;
     public static int currentLargeBattery;
@@ -792,11 +796,12 @@ public static class UserDataManager
         currentXP = data.xp;
         currentPetType = data.pet;
         currentPetName = data.petName;
+        currentPetStage = data.petStage;
         currentSmallBattery = data.inventory.smallBattery;
         currentMediumBattery = data.inventory.mediumBattery;
         currentLargeBattery = data.inventory.largeBattery;
 
-        Debug.Log($"UserDataManager loaded: {playerKey} - {currentPetName} (Level {currentLevel}, XP {currentXP})");
+        Debug.Log($"UserDataManager loaded: {playerKey} - {currentPetName} (Level {currentLevel}, XP {currentXP}, Stage {currentPetStage})");
         Debug.Log($"Inventory: Small={currentSmallBattery}, Medium={currentMediumBattery}, Large={currentLargeBattery}");
     }
 
@@ -810,6 +815,7 @@ public static class UserDataManager
         currentXP = 0;
         currentPetType = null;
         currentPetName = null;
+        currentPetStage = 1;
         currentSmallBattery = 0;
         currentMediumBattery = 0;
         currentLargeBattery = 0;
