@@ -20,9 +20,10 @@ public class GameManager : MonoBehaviour
     [Header("Pet Spawn")]
     public Transform petSpawnPoint; // Where to spawn the pet
 
-    [Header("Evolution Settings")]
-    public int stage2LevelRequirement = 10; // Level needed for stage 2
-    public int stage3LevelRequirement = 20; // Level needed for stage 3
+    [Header("Size Scaling Settings")]
+    public int xpPerScaleIncrease = 50; // XP needed for each size increase
+    public float scaleIncreaseAmount = 0.1f; // How much to increase scale each time (10%)
+    public float baseScale = 1f; // Starting scale at 0 XP
     public int xpPerLevel = 10; // XP needed per level
 
     [Header("Evolution UI")]
@@ -69,6 +70,12 @@ public class GameManager : MonoBehaviour
     public GameObject yesButton; // Confirm logout
     public GameObject noButton; // Cancel logout
 
+    [Header("Sleep Mode UI")]
+    public GameObject sleepModePanel; // Panel shown during sleep mode
+    public TMP_Text sleepPassiveXPText; // Display passive XP earned during sleep
+    public TMP_Text sleepTimePassedText; // Display time passed during sleep
+    public GameObject exitSleepButton; // Button to exit sleep mode
+
     private DatabaseReference dbReference;
     private GameObject currentPet;
 
@@ -80,6 +87,8 @@ public class GameManager : MonoBehaviour
     // Passive XP timer
     private float passiveXPTimer;
     private bool isSleepModeActive = false;
+    private int sleepXPEarned = 0; // Track XP earned during current sleep session
+    private float sleepTimeElapsed = 0f; // Track time passed during current sleep session
 
     void Start()
     {
@@ -93,6 +102,10 @@ public class GameManager : MonoBehaviour
         // Hide logout confirmation panel initially
         if (logoutConfirmationPanel != null)
             logoutConfirmationPanel.SetActive(false);
+
+        // Hide sleep mode panel initially
+        if (sleepModePanel != null)
+            sleepModePanel.SetActive(false);
 
         // Hide menu panel initially (collapsed)
         if (menuPanel != null)
@@ -185,11 +198,35 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    void UpdateSleepUI()
+    {
+        if (!isSleepModeActive || sleepModePanel == null || !sleepModePanel.activeSelf)
+            return;
+
+        // Update passive XP earned display
+        if (sleepPassiveXPText != null)
+        {
+            sleepPassiveXPText.text = $"Passive XP Earned: {sleepXPEarned}";
+        }
+
+        // Update time passed display in HH:MM:SS format
+        if (sleepTimePassedText != null)
+        {
+            int hours = Mathf.FloorToInt(sleepTimeElapsed / 3600f);
+            int minutes = Mathf.FloorToInt((sleepTimeElapsed % 3600f) / 60f);
+            int seconds = Mathf.FloorToInt(sleepTimeElapsed % 60f);
+            sleepTimePassedText.text = $"Time Passed: {hours:00}:{minutes:00}:{seconds:00}";
+        }
+    }
+
     void UpdatePassiveXP()
     {
         // Only run passive XP timer if sleep mode is active
         if (!isSleepModeActive)
             return;
+
+        // Track time elapsed during sleep
+        sleepTimeElapsed += Time.deltaTime;
 
         // Passive XP Timer
         passiveXPTimer -= Time.deltaTime;
@@ -197,10 +234,14 @@ public class GameManager : MonoBehaviour
         {
             // Gain passive XP
             AddXP(passiveXPAmount);
-            Debug.Log($"Passive XP gained from sleep! +{passiveXPAmount} XP");
+            sleepXPEarned += passiveXPAmount;
+            Debug.Log($"Passive XP gained from sleep! +{passiveXPAmount} XP (Total this session: {sleepXPEarned})");
             // Reset timer
             passiveXPTimer = passiveXPInterval;
         }
+
+        // Update sleep UI
+        UpdateSleepUI();
 
         if (DevSettings.Instance != null && DevSettings.Instance.devModeEnabled)
         {
@@ -226,101 +267,32 @@ public class GameManager : MonoBehaviour
         Debug.Log($"Pet: {UserDataManager.currentPetName} ({UserDataManager.currentPetType}) - Stage {UserDataManager.currentPetStage}");
         Debug.Log($"Level: {UserDataManager.currentLevel}, XP: {UserDataManager.currentXP}");
 
-        // Spawn the correct pet model with current stage (no auto-evolution on load)
-        SpawnPet(UserDataManager.currentPetType, UserDataManager.currentPetStage);
+        // Spawn the correct pet model (always stage 1, no evolution)
+        SpawnPet(UserDataManager.currentPetType, 1);
+
+        // Apply size scaling based on current XP
+        UpdatePetScale();
 
         // Update UI
         UpdateUI();
     }
 
-    // Call this method when XP or level changes in-game
-    public void CheckForEvolution()
+    // Update pet scale based on current XP
+    public void UpdatePetScale()
     {
-        int currentLevel = UserDataManager.currentLevel;
-        int currentStage = UserDataManager.currentPetStage;
-        int newStage = currentStage;
+        if (currentPet == null)
+            return;
 
-        // Determine what stage the pet should be at based on level
-        if (currentLevel >= stage3LevelRequirement)
-        {
-            newStage = 3;
-        }
-        else if (currentLevel >= stage2LevelRequirement)
-        {
-            newStage = 2;
-        }
-        else
-        {
-            newStage = 1;
-        }
-
-        // If stage changed, trigger evolution animation
-        if (newStage > currentStage)
-        {
-            Debug.Log($"Pet is evolving from Stage {currentStage} to Stage {newStage}!");
-            StartCoroutine(EvolutionSequence(currentStage, newStage));
-        }
-    }
-
-    IEnumerator EvolutionSequence(int oldStage, int newStage)
-    {
-        // Update the stage in UserDataManager
-        UserDataManager.currentPetStage = newStage;
-
-        // Show evolution panel with fade in
-        if (evolutionPanel != null)
-        {
-            evolutionPanel.SetActive(true);
-            
-            if (evolutionText != null)
-                evolutionText.text = "Your pet is evolving!";
-
-            // Fade in
-            if (evolutionCanvasGroup != null)
-            {
-                float elapsed = 0f;
-                float fadeDuration = 0.5f;
-                
-                while (elapsed < fadeDuration)
-                {
-                    elapsed += Time.deltaTime;
-                    evolutionCanvasGroup.alpha = Mathf.Lerp(0f, 1f, elapsed / fadeDuration);
-                    yield return null;
-                }
-                evolutionCanvasGroup.alpha = 1f;
-            }
-
-            // Wait to show the message
-            yield return new WaitForSeconds(evolutionDisplayDuration);
-
-            // Fade out
-            if (evolutionCanvasGroup != null)
-            {
-                float elapsed = 0f;
-                float fadeDuration = 0.5f;
-                
-                while (elapsed < fadeDuration)
-                {
-                    elapsed += Time.deltaTime;
-                    evolutionCanvasGroup.alpha = Mathf.Lerp(1f, 0f, elapsed / fadeDuration);
-                    yield return null;
-                }
-                evolutionCanvasGroup.alpha = 0f;
-            }
-
-            evolutionPanel.SetActive(false);
-        }
-        else
-        {
-            // If no evolution panel, just wait a moment
-            yield return new WaitForSeconds(1f);
-        }
-
-        // Despawn old pet and spawn new evolved pet
-        SpawnPet(UserDataManager.currentPetType, newStage);
-
-        // Save the evolution
-        AutoSave();
+        // Calculate how many 50 XP increments the pet has reached
+        int scaleLevel = UserDataManager.currentXP / xpPerScaleIncrease;
+        
+        // Calculate the new scale
+        float newScale = baseScale + (scaleLevel * scaleIncreaseAmount);
+        
+        // Apply the scale to the pet
+        currentPet.transform.localScale = Vector3.one * newScale;
+        
+        Debug.Log($"Pet scaled to {newScale:F2}x based on {UserDataManager.currentXP} XP (Scale Level: {scaleLevel})");
     }
 
     void SpawnPet(string petType, int stage)
@@ -370,6 +342,9 @@ public class GameManager : MonoBehaviour
         {
             currentPet = Instantiate(prefabToSpawn, petSpawnPoint.position, petSpawnPoint.rotation);
             Debug.Log($"Spawned {petType} Stage {stage}");
+            
+            // Apply current scale based on XP
+            UpdatePetScale();
         }
         else
         {
@@ -428,23 +403,50 @@ public class GameManager : MonoBehaviour
 
     public void OnSleepButtonPress()
     {
-        // Toggle sleep mode
-        isSleepModeActive = !isSleepModeActive;
-
-        if (isSleepModeActive)
+        if (!isSleepModeActive)
         {
+            // Activate sleep mode
+            isSleepModeActive = true;
             Debug.Log("Sleep mode activated - Passive XP timer started");
-            // Start the timer from the beginning
+            
+            // Reset tracking variables
+            sleepXPEarned = 0;
+            sleepTimeElapsed = 0f;
             passiveXPTimer = passiveXPInterval;
-        }
-        else
-        {
-            Debug.Log("Sleep mode deactivated - Passive XP timer reset (XP gained is saved)");
-            // Reset timer when exiting sleep mode
-            passiveXPTimer = passiveXPInterval;
+            
+            // Show sleep mode panel
+            if (sleepModePanel != null)
+            {
+                sleepModePanel.SetActive(true);
+                UpdateSleepUI();
+            }
         }
 
         CloseMenu(); // Close menu when action is triggered
+    }
+
+    public void OnExitSleepButtonPress()
+    {
+        if (isSleepModeActive)
+        {
+            Debug.Log($"Sleep mode deactivated - Earned {sleepXPEarned} XP over {sleepTimeElapsed:F0} seconds");
+            
+            // Deactivate sleep mode
+            isSleepModeActive = false;
+            
+            // Hide sleep panel
+            if (sleepModePanel != null)
+                sleepModePanel.SetActive(false);
+            
+            // Reset timer
+            passiveXPTimer = passiveXPInterval;
+            
+            // Update UI and save to database in real-time
+            RefreshUI();
+            AutoSave();
+            
+            Debug.Log("Game state updated and saved to database");
+        }
     }
 
     // ================= MENU TOGGLE =================
@@ -595,10 +597,10 @@ public class GameManager : MonoBehaviour
         {
             UserDataManager.currentLevel = newLevel;
             Debug.Log($"Level up! Now level {UserDataManager.currentLevel}");
-            
-            // Check for evolution
-            CheckForEvolution();
         }
+        
+        // Update pet size based on new XP
+        UpdatePetScale();
         
         RefreshUI();
         AutoSave();
