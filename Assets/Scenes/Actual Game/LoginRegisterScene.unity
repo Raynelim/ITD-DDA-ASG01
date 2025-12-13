@@ -7493,7 +7493,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 20484394}
         m_TargetAssemblyTypeName: FirebaseController, Assembly-CSharp
-        m_MethodName: SelectWolfMage
+        m_MethodName: SelectRoboCat
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

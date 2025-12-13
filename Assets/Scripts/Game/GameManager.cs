@@ -278,22 +278,26 @@ public class GameManager : MonoBehaviour
     }
 
     // Update pet scale based on current XP
-    public void UpdatePetScale()
-    {
-        if (currentPet == null)
-            return;
+public void UpdatePetScale()
+{
+    if (currentPet == null)
+        return;
 
-        // Calculate how many 50 XP increments the pet has reached
-        int scaleLevel = UserDataManager.currentXP / xpPerScaleIncrease;
-        
-        // Calculate the new scale
-        float newScale = baseScale + (scaleLevel * scaleIncreaseAmount);
-        
-        // Apply the scale to the pet
-        currentPet.transform.localScale = Vector3.one * newScale;
-        
-        Debug.Log($"Pet scaled to {newScale:F2}x based on {UserDataManager.currentXP} XP (Scale Level: {scaleLevel})");
+    int scaleLevel = UserDataManager.currentXP / xpPerScaleIncrease;
+    float newScale = baseScale + (scaleLevel * scaleIncreaseAmount);
+
+    var scaler = currentPet.GetComponent<PetVisualScaler>();
+    if (scaler != null)
+    {
+        scaler.SetScale(newScale);
+        Debug.Log($"Pet visual scaled to {newScale:F2}x (XP: {UserDataManager.currentXP})");
     }
+    else
+    {
+        Debug.LogWarning("PetVisualScaler missing on pet prefab!");
+    }
+}
+
 
     void SpawnPet(string petType, int stage)
     {
