@@ -11,9 +11,16 @@ public class WorldConsumable : MonoBehaviour
         if (consumed) return;
         consumed = true;
 
+        var animator = stats.GetComponent<PetAnimatorController>();
+        if (animator != null)
+        {
+            animator.PlayPickup();
+        }
+
         stats.AddXP(data.xpBoost);
         stats.AddHappiness(data.happinessBoost);
 
-        Destroy(gameObject, 0.1f);
-    }
+        Destroy(gameObject, 2f); // matches pickup animation length
+}
+
 }

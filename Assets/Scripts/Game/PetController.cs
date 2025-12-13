@@ -26,6 +26,8 @@ public class PetController : MonoBehaviour
     private bool isGrabbed;
     private bool isMovingToUserTap;
     private float wanderTimer;
+    private bool isInteracting;
+
 
     private void Awake()
     {
@@ -51,8 +53,9 @@ public class PetController : MonoBehaviour
 
     private void Update()
     {
-        if (isGrabbed)
+        if (isGrabbed || isInteracting)
             return;
+
 
         // If moving to a user tap, stop wandering until arrival
         if (isMovingToUserTap)
@@ -162,6 +165,9 @@ public class PetController : MonoBehaviour
                 // At the object → consume it
                 nearest.Consume(GetComponent<PetStats>());
                 wanderTimer = 0; 
+                isInteracting = true;
+                Invoke(nameof(EndInteraction), 0.6f);
+
             }
         }
     }
@@ -175,4 +181,10 @@ public class PetController : MonoBehaviour
             .OrderBy(c => Vector3.Distance(transform.position, c.transform.position))
             .FirstOrDefault();
     }
+
+    private void EndInteraction()
+    {
+        isInteracting = false;
+    }
+
 }
