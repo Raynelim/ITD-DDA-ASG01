@@ -7,15 +7,9 @@ using TMPro;
 
 public class GameManager : MonoBehaviour
 {
-    [Header("Pet Models - Robofox Evolution Stages")]
-    public GameObject robofoxStage1Prefab;
-    public GameObject robofoxStage2Prefab;
-    public GameObject robofoxStage3Prefab;
-
-    [Header("Pet Models - Robocat Evolution Stages")]
-    public GameObject robocatStage1Prefab;
-    public GameObject robocatStage2Prefab;
-    public GameObject robocatStage3Prefab;
+    [Header("Pet Models")]
+    public GameObject robofoxPrefab;
+    public GameObject robocatPrefab;
 
     [Header("Pet Spawn")]
     public Transform petSpawnPoint; // Where to spawn the pet
@@ -313,59 +307,53 @@ public class GameManager : MonoBehaviour
         AutoSave();
     }
 
-    void SpawnPet(string petType, int stage)
+void SpawnPet(string petType, int stage)
+{
+    GameObject prefabToSpawn = null;
+
+    if (petType == "robofox")
+        prefabToSpawn = robofoxPrefab;
+    else if (petType == "robocat")
+        prefabToSpawn = robocatPrefab;
+
+    if (prefabToSpawn == null)
     {
-        // Destroy existing pet if any
-        if (currentPet != null)
-        {
-            Destroy(currentPet);
-        }
-
-        GameObject prefabToSpawn = null;
-
-        // Select the correct prefab based on type and stage
-        if (petType == "robofox")
-        {
-            switch (stage)
-            {
-                case 1:
-                    prefabToSpawn = robofoxStage1Prefab;
-                    break;
-                case 2:
-                    prefabToSpawn = robofoxStage2Prefab;
-                    break;
-                case 3:
-                    prefabToSpawn = robofoxStage3Prefab;
-                    break;
-            }
-        }
-        else if (petType == "robocat")
-        {
-            switch (stage)
-            {
-                case 1:
-                    prefabToSpawn = robocatStage1Prefab;
-                    break;
-                case 2:
-                    prefabToSpawn = robocatStage2Prefab;
-                    break;
-                case 3:
-                    prefabToSpawn = robocatStage3Prefab;
-                    break;
-            }
-        }
-
-        // Spawn the pet
-        if (prefabToSpawn != null)
-        {
-            currentPet = Instantiate(prefabToSpawn, petSpawnPoint.position, petSpawnPoint.rotation);
-            Debug.Log($"Spawned {petType} Stage {stage}");
-        }
-        else
-        {
-            Debug.LogError($"Pet prefab not assigned for {petType} Stage {stage}!");
-        }
+        Debug.LogError($"No prefab assigned for pet type: {petType}");
+        return;
     }
+
+    bool needsRespawn =
+        currentPet == null ||
+        !currentPet.name.Contains(petType);
+
+    if (needsRespawn)
+    {
+        if (currentPet != null)
+            Destroy(currentPet);
+
+        currentPet = Instantiate(
+            prefabToSpawn,
+            petSpawnPoint.position,
+            petSpawnPoint.rotation
+        );
+    }
+
+    // ALWAYS update stage
+    var switcher = currentPet.GetComponent<EvolutionModelSwitcher>();
+    var animator = currentPet.GetComponent<PetAnimatorController>();
+
+    if (switcher == null || animator == null)
+    {
+        Debug.LogError("Pet prefab missing required components!");
+        return;
+    }
+
+    switcher.SetStage(stage);
+    animator.RefreshAnimator();
+
+    Debug.Log($"Pet {petType} set to Stage {stage}");
+}
+
 
     void UpdateUI()
     {

@@ -1,12 +1,12 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-[RequireComponent(typeof(NavMeshAgent))]
 public class PetAnimatorController : MonoBehaviour
 {
-    [SerializeField] private Animator animator;
-
     private NavMeshAgent agent;
+
+    [SerializeField] private Animator animator;
+    private EvolutionModelSwitcher modelSwitcher;
 
     private static readonly int SpeedHash = Animator.StringToHash("Speed");
     private static readonly int PickupHash = Animator.StringToHash("IsPickingUp");
@@ -14,16 +14,25 @@ public class PetAnimatorController : MonoBehaviour
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
+        modelSwitcher = GetComponent<EvolutionModelSwitcher>();
+        RefreshAnimator();
     }
 
     void Update()
     {
-        float speed = agent.velocity.magnitude;
-        animator.SetFloat(SpeedHash, speed);
+        if (animator == null || agent == null) return;
+        animator.SetFloat(SpeedHash, agent.velocity.magnitude);
     }
 
     public void PlayPickup()
     {
-        animator.SetTrigger(PickupHash);
+        if (animator != null)
+            animator.SetTrigger(PickupHash);
+    }
+
+    public void RefreshAnimator()
+    {
+        if (modelSwitcher == null) return;
+        animator = modelSwitcher.GetActiveAnimator();
     }
 }

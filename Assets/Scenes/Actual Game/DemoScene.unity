@@ -461,6 +461,7 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+<<<<<<< Updated upstream
 --- !u!1 &373676898
 GameObject:
   m_ObjectHideFlags: 0
@@ -597,6 +598,8 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 373676898}
   m_CullTransparentMesh: 1
+=======
+>>>>>>> Stashed changes
 --- !u!1001 &389620635
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -663,7 +666,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: bd8dd489f82be2142aadf3a470812e69, type: 3}
       propertyPath: m_Name
-      value: Idle (1)
+      value: CatStage1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -734,12 +737,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac097bb64bc628746b12d4657e42ab75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  robofoxStage1Prefab: {fileID: 0}
-  robofoxStage2Prefab: {fileID: 0}
-  robofoxStage3Prefab: {fileID: 0}
-  robocatStage1Prefab: {fileID: 389620637}
-  robocatStage2Prefab: {fileID: 0}
-  robocatStage3Prefab: {fileID: 0}
+  robofoxPrefab: {fileID: 0}
+  robocatPrefab: {fileID: 0}
   petSpawnPoint: {fileID: 532329099}
   stage2LevelRequirement: 15
   stage3LevelRequirement: 45
@@ -754,6 +753,7 @@ MonoBehaviour:
   smallBatteryText: {fileID: 0}
   mediumBatteryText: {fileID: 0}
   largeBatteryText: {fileID: 0}
+<<<<<<< Updated upstream
   smallBatteryTimerText: {fileID: 1507552840}
   mediumBatteryTimerText: {fileID: 373676900}
   largeBatteryTimerText: {fileID: 1943369596}
@@ -763,6 +763,15 @@ MonoBehaviour:
   passiveXPInterval: 300
   passiveXPAmount: 1
   feedButton: {fileID: 1083606569}
+=======
+  smallBatteryTimerText: {fileID: 0}
+  mediumBatteryTimerText: {fileID: 0}
+  largeBatteryTimerText: {fileID: 0}
+  smallBatteryInterval: 10
+  mediumBatteryInterval: 30
+  largeBatteryInterval: 60
+  feedButton: {fileID: 0}
+>>>>>>> Stashed changes
   sleepButton: {fileID: 0}
   logoutButton: {fileID: 0}
   menuPanel: {fileID: 1962280616}
@@ -1129,6 +1138,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 981815141}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+<<<<<<< Updated upstream
 --- !u!1 &521170522
 GameObject:
   m_ObjectHideFlags: 0
@@ -1205,6 +1215,8 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 521170522}
   m_CullTransparentMesh: 1
+=======
+>>>>>>> Stashed changes
 --- !u!1001 &532329098
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1228,6 +1240,10 @@ PrefabInstance:
     - target: {fileID: 632778154127226471, guid: a96cd23d8739d6f41880a7042f5926a4, type: 3}
       propertyPath: m_AutoBraking
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1697315471176368165, guid: a96cd23d8739d6f41880a7042f5926a4, type: 3}
+      propertyPath: m_Name
+      value: Cat
       objectReference: {fileID: 0}
     - target: {fileID: 1744576906208964978, guid: a96cd23d8739d6f41880a7042f5926a4, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1331,7 +1347,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5644678633159899780, guid: a96cd23d8739d6f41880a7042f5926a4, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6928851731925563986, guid: a96cd23d8739d6f41880a7042f5926a4, type: 3}
       propertyPath: m_Enabled
@@ -1357,6 +1373,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1697315471176368165, guid: a96cd23d8739d6f41880a7042f5926a4, type: 3}
       insertIndex: -1
       addedObject: {fileID: 532329102}
+    - targetCorrespondingSourceObject: {fileID: 1697315471176368165, guid: a96cd23d8739d6f41880a7042f5926a4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 532329105}
   m_SourcePrefab: {fileID: 100100000, guid: a96cd23d8739d6f41880a7042f5926a4, type: 3}
 --- !u!4 &532329099 stripped
 Transform:
@@ -1415,6 +1434,21 @@ MonoBehaviour:
   wanderRadius: 2.5
   wanderInterval: 5
   stoppingDistance: 0.1
+--- !u!114 &532329105
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 532329101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d14f5699ee8528459bb1fd1d6707f53, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stage1: {fileID: 389620637}
+  stage2: {fileID: 0}
+  stage3: {fileID: 0}
 --- !u!1 &573891791
 GameObject:
   m_ObjectHideFlags: 0
@@ -1548,6 +1582,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 573891791}
   m_CullTransparentMesh: 1
+<<<<<<< Updated upstream
 --- !u!1 &609190073
 GameObject:
   m_ObjectHideFlags: 0
@@ -1953,6 +1988,8 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 711097700}
   m_CullTransparentMesh: 1
+=======
+>>>>>>> Stashed changes
 --- !u!1 &725086173
 GameObject:
   m_ObjectHideFlags: 0
@@ -3264,6 +3301,7 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+<<<<<<< Updated upstream
 --- !u!1 &1488198820
 GameObject:
   m_ObjectHideFlags: 0
@@ -3506,6 +3544,8 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1507552838}
   m_CullTransparentMesh: 1
+=======
+>>>>>>> Stashed changes
 --- !u!1 &1606587590
 GameObject:
   m_ObjectHideFlags: 0
@@ -4509,6 +4549,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1966278962}
   m_CullTransparentMesh: 1
+<<<<<<< Updated upstream
 --- !u!1 &2020126647
 GameObject:
   m_ObjectHideFlags: 0
@@ -4645,6 +4686,8 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2020126647}
   m_CullTransparentMesh: 1
+=======
+>>>>>>> Stashed changes
 --- !u!1 &2036661032
 GameObject:
   m_ObjectHideFlags: 0
@@ -4724,6 +4767,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+<<<<<<< Updated upstream
 --- !u!1 &2083344276
 GameObject:
   m_ObjectHideFlags: 0
@@ -5151,6 +5195,8 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2103260401}
   m_CullTransparentMesh: 1
+=======
+>>>>>>> Stashed changes
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -5165,4 +5211,3 @@ SceneRoots:
   - {fileID: 498630167}
   - {fileID: 489625023}
   - {fileID: 936226720}
-  - {fileID: 1488198824}

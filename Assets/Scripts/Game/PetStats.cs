@@ -2,18 +2,23 @@ using UnityEngine;
 
 public class PetStats : MonoBehaviour
 {
-    public int xp;
-    public int happiness;
+    private GameManager gameManager;
 
-    public void AddXP(int amount)
+    private void Awake()
     {
-        xp += amount;
-        Debug.Log("XP: " + xp);
+        gameManager = FindObjectOfType<GameManager>();
+        if (gameManager == null)
+        {
+            Debug.LogError("GameManager not found in scene!");
+        }
     }
 
-    public void AddHappiness(int amount)
+    // Called when consumable is eaten
+    public void AddXP(int amount)
     {
-        happiness += amount;
-        Debug.Log("Happiness: " + happiness);
+        if (gameManager == null) return;
+
+        gameManager.AddXP(amount);
+        Debug.Log($"Pet gained {amount} XP via GameManager");
     }
 }
